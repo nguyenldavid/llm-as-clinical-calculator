@@ -673,7 +673,8 @@ def calculate_wells_dvt(calc: CalcRequestWellsDvt):
     if calc.alternative_diagnosis_as_likely:
         wells_dvt_score += -2
 
-    if wells_dvt_score == 0:
+    # the alternative-diagnosis criterion (-2) can make the score negative
+    if wells_dvt_score <= 0:
         risk_category = "low/unlikely"
         prevalence_of_dvt = "5%"
     if wells_dvt_score == 1 or wells_dvt_score == 2:

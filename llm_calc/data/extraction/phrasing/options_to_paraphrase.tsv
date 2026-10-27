@@ -1,0 +1,229 @@
+key	calculator	criterion	option_name	score_effect	original	context
+7c76264dcece	psiport	psiport_altered_mental_status	PSIPORT Altered Mental Status yes	20	The patient presents with confusion, disorientation, and inability to recognize family members	{psiport_altered_mental_status}.
+70285169f842	psiport	psiport_altered_mental_status	PSIPORT Altered Mental Status no	0	They are alert, oriented to person, place, and time, and engage in coherent conversation	{psiport_altered_mental_status}.
+f47d276c3c11	psiport	psiport_cerebrovascular_disease	PSIPORT Cerebrovascular Disease Yes	10	The patient suffered a stroke 3 years ago, resulting in mild left-sided weakness and aphasia	{psiport_cerebrovascular_disease}.
+33d532200fb9	psiport	psiport_cerebrovascular_disease	PSIPORT Cerebrovascular Disease No	0	They deny any history of stroke or transient ischemic attacks	{psiport_cerebrovascular_disease}.
+8012a384382d	psiport	psiport_congestive_heart_failure	PSIPORT Congestive Heart Failure Yes	10	The patient has congestive heart failure with an ejection fraction of 35% and takes daily diuretics	{psiport_congestive_heart_failure}.
+6208e04e6408	psiport	psiport_congestive_heart_failure	PSIPORT Congestive Heart Failure No	0	They have no symptoms or diagnosis of heart failure and maintain an active lifestyle	{psiport_congestive_heart_failure}.
+d6c47d9cf972	psiport	psiport_liver_disease	PSIPORT Liver Disease Yes	20	The patient was diagnosed with cirrhosis due to chronic hepatitis C infection 10 years ago	{psiport_liver_disease}.
+164a91e81949	psiport	psiport_liver_disease	PSIPORT Liver Disease No	0	They report no history of liver disease and have normal liver function tests	{psiport_liver_disease}.
+671b27341e73	psiport	psiport_neoplastic_disease	PSIPORT Neoplastic Disease Yes	30	The patient has a history of stage II colon cancer, diagnosed 5 years ago, and is currently in remission	{psiport_neoplastic_disease}.
+68e1a0fbfe5c	psiport	psiport_neoplastic_disease	PSIPORT Neoplastic Disease No	0	They have no personal history of cancer or other neoplastic diseases	{psiport_neoplastic_disease}.
+1b48cb6d011f	psiport	psiport_nursing_home_resident	PSIPORT Nursing Home Resident Yes	10	The patient resides in a skilled nursing facility and requires assistance with daily activities	{psiport_nursing_home_resident}.
+ad4988ec5c6e	psiport	psiport_nursing_home_resident	PSIPORT Nursing Home Resident No	0	They live independently in their own home and manage all personal care	{psiport_nursing_home_resident}.
+c86aa1e78193	psiport	psiport_pleural_effusion	PSIPORT Pleural Effusion Yes	10	bilateral infiltrates and a right-sided pleural effusion	Chest radiograph reveals {psiport_pleural_effusion}.
+0d90c6a35372	psiport	psiport_pleural_effusion	PSIPORT Pleural Effusion No	0	poor inspiratory effort, a consolidation in the left upper lobe and no effusions	Chest radiograph reveals {psiport_pleural_effusion}.
+f668ede362f1	psiport	psiport_renal_disease	PSIPORT Renal Disease yes	10	The patient has end-stage renal disease and undergoes hemodialysis three times a week	{psiport_renal_disease}.
+bf87e4ceb1f0	psiport	psiport_renal_disease	PSIPORT Renal Disease no	0	They have normal kidney function with no history of renal disease	{psiport_renal_disease}.
+9a8cc71bb9c2	ariscat	ariscat_anemia	ARISCAT Anemia	11	The preoperative hct is 20%	{ariscat_anemia}.
+31637569aa70	ariscat	ariscat_emergency_procedure	ariscat_emergency_procedure yes	8	it is scheduled as an emergency surgery	A {ariscat_age}-year-old patient is scheduled for {ariscat_surgical_incision}, with anticipated duration of {ariscat_duration_of_surgery}; {ariscat_emergency_procedure}.
+ab61009d87ef	ariscat	ariscat_emergency_procedure	ariscat_emergency_procedure no	0	it is scheduled as an elective procedure	A {ariscat_age}-year-old patient is scheduled for {ariscat_surgical_incision}, with anticipated duration of {ariscat_duration_of_surgery}; {ariscat_emergency_procedure}.
+55d08af60c7e	ariscat	ariscat_respiratory_infection	ARISCAT No Respiratory Infection	0	They had a recent cold, but did not seek medical care and managed with acetaminophen	{ariscat_respiratory_infection}.
+a408c42a1fca	ariscat	ariscat_respiratory_infection	ARISCAT Respiratory Infection	17	Three weeks ago, they were febrile and were treated with a course of azirthromycin for a presumed pneumonia	{ariscat_respiratory_infection}.
+9949c826e8e7	ariscat	ariscat_surgical_incision	ARISCAT Peripheral Incision	0	an ORIF of the left humerous	A {ariscat_age}-year-old patient is scheduled for {ariscat_surgical_incision}, with anticipated duration of {ariscat_duration_of_surgery}; {ariscat_emergency_procedure}.
+4355a04ee87e	cci	cci_aids_hiv	CCI AIDS/HIV	0	They deny any history of HIV or AIDS	{cci_aids_hiv}.
+a55d92d3fb80	cci	cci_aids_hiv	CCI AIDS/HIV	6	The patient reports an HIV diagnosis five years ago which has progressed to AIDS.	{cci_aids_hiv}.
+b82dcf856429	cci	cci_cerebrovascular_disease	CCI Cerebrovascular Disease	0	Review of neurologic history reveals no prior strokes or transient ischemic attacks	{cci_cerebrovascular_disease}.
+2b7e7898da44	cci	cci_cerebrovascular_disease	CCI Cerebrovascular Disease	1	The patient has a history of stroke three years ago with residual left-sided upper extremity weakness	{cci_cerebrovascular_disease}.
+1785e518b124	cci	cci_chronic_pulmonary_disease	CCI Chronic Pulmonary Disease	0	They deny any history of chronic lung diseases	{cci_chronic_pulmonary_disease}.
+16d1d3076bc5	cci	cci_chronic_pulmonary_disease	CCI Chronic Pulmonary Disease	1	The patient reports a long-standing diagnosis of emphysema	{cci_chronic_pulmonary_disease}.
+7ce7e2539e5e	cci	cci_congestive_heart_failure	CCI Congestive Heart Failure	0	Review of cardiac history reveals no symptoms or diagnosis of congestive heart failure	{cci_congestive_heart_failure}.
+3546ee48679d	cci	cci_congestive_heart_failure	CCI Congestive Heart Failure	1	They endorse a diagnosis of heart failure with reduced ejection fraction but remain asymptomatic	{cci_congestive_heart_failure}.
+07d5c1948b6c	cci	cci_dementia	CCI Dementia	0	They show no signs of cognitive impairment or dementia	{cci_dementia}.
+581abd6edaae	cci	cci_dementia	CCI Dementia	1	The patient endorses a diagnosis of Alzheimer's disease from two years ago and requires assistance with daily activities	{cci_dementia}.
+df6276ae4949	cci	cci_diabetes	CCI no diabetes	0	They deny any history of diabetes	{cci_diabetes}.
+32840629aae1	cci	cci_diabetes	CCI Diabetes Without Complications	1	The patient notes a diagnosis of type 2 diabetes three years ago, managed with oral medications	{cci_diabetes}.
+549e386e2455	cci	cci_diabetes	CCI Diabetes With Complications	2	They report a 20-year history of type 1 diabetes complicated by diabetic retinopathy and neuropathy	{cci_diabetes}.
+58bbe91dd05c	cci	cci_hemiplegia_or_paraplegia	CCI Hemiplegia or Paraplegia	0	Review of neurologic function reveals full motor capabilities in all limbs	{cci_hemiplegia_or_paraplegia}.
+eec40ed8ea5b	cci	cci_hemiplegia_or_paraplegia	CCI Hemiplegia or Paraplegia	2	The patient has been paraplegic since a car accident 10 years ago	{cci_hemiplegia_or_paraplegia}.
+84bf8160a4bf	cci	cci_leukemia	CCI leuk no	0	Review of hematologic history reveals no prior leukemia	{cci_leukemia}.
+d563438dd9ea	cci	cci_leukemia	CCI leuk yes	2	They endorse a diagnosis of acute myeloid leukemia six months ago and are currently undergoing chemotherapy	{cci_leukemia}.
+f44654cb4042	cci	cci_liver_disease	CCI no Liver Disease	0	The patient's liver function tests are normal and they report no ongoing liver disease	{cci_liver_disease}.
+035f3b3d10df	cci	cci_liver_disease	CCI Mild Liver Disease	1	They endorse a diagnosis of chronic viral hepatitis without complications	{cci_liver_disease}.
+bc9814d47808	cci	cci_liver_disease	CCI Moderate or Severe Liver Disease	3	The patient reports cirrhosis due to chronic alcohol abuse which has been complicated by portal hypertension and variceal bleeding	{cci_liver_disease}.
+5a9b37ed4139	cci	cci_lymphoma	CCI lymphoma no	0	The patient denies any history of lymphoma	{cci_lymphoma}.
+4fbd8498bbb1	cci	cci_lymphoma	CCI lymphoma yes	2	The patient was diagnosed with non-Hodgkin's lymphoma two years ago and have completed several rounds of chemotherapy and radiation therapy	{cci_lymphoma}.
+9cd6cc4271fd	cci	cci_myocardial_infarction	CCI Myocardial Infarction	0	They deny any history of heart attacks	{cci_myocardial_infarction}.
+96efd26d8d0b	cci	cci_myocardial_infarction	CCI Myocardial Infarction	1	The patient reports a myocardial infarction two years ago, followed by coronary stenting	{cci_myocardial_infarction}.
+83ddba061256	cci	cci_peptic_ulcer_disease	CCI Peptic Ulcer Disease	0	Review of gastrointestinal history reveals no prior peptic ulcer disease	{cci_peptic_ulcer_disease}.
+dcbf29c633cf	cci	cci_peptic_ulcer_disease	CCI Peptic Ulcer Disease	1	They report a history of recurrent peptic ulcers and take daily proton pump inhibitors	{cci_peptic_ulcer_disease}.
+0aabff9576a4	cci	cci_peripheral_vascular_disease	CCI Peripheral Vascular Disease	0	The patient notes no known peripheral vascular disease	{cci_peripheral_vascular_disease}.
+c3aa9c6c120c	cci	cci_peripheral_vascular_disease	CCI Peripheral Vascular Disease	1	They report recurrent claudication in their legs and endorse a diagnosis of peripheral artery disease	{cci_peripheral_vascular_disease}.
+61d40e499e23	cci	cci_renal_disease	CCI Renal Disease	0	Renal function testing is normal	{cci_renal_disease}.
+8a6516e74ffe	cci	cci_renal_disease	CCI Renal Disease	2	The patient endorses a diagnosis of stage 3 chronic kidney disease and is monitored by a nephrologist	{cci_renal_disease}.
+620c4075109e	cci	cci_rheumatic_disease	CCI Rheumatic Disease	0	They have no history of rheumatic or connective tissue diseases	{cci_rheumatic_disease}.
+8d202b546e0b	cci	cci_rheumatic_disease	CCI Rheumatic Disease	1	The patient notes a diagnosis of rheumatoid arthritis five years ago and is on immunosuppressive therapy	{cci_rheumatic_disease}.
+1b3224a38317	cci	cci_solid_tumor	No solid tumor	0	Review of oncologic history reveals no solid tumor neoplastic disease	{cci_solid_tumor}.
+366c4792a3c8	cci	cci_solid_tumor	Local solid tumor	2	They report a recent diagnosis of early-stage breast cancer without known metastasis and are scheduled for a lumpectomy	{cci_solid_tumor}.
+00e60ff9a6fb	cci	cci_solid_tumor	Metastatic solid tumor	6	The patient notes stage 4 lung cancer with metastases to the brain and liver	{cci_solid_tumor}.
+db63b0a99dbe	caprini	mobility	Mobility_normal_they_are_ambulating_indepently	0	normal, they are ambulating indepently	Their mobility is best characterized as {mobility}.
+c314caa2121b	caprini	mobility	Mobility_minimal_currently_as_they_are_on_medical_bedrest	1	minimal currently, they have been on medical bedrest for the past two days, but are able to walk around their room some	Their mobility is best characterized as {mobility}.
+b928fa9809c0	caprini	mobility	Mobility_very_poor_they_are_confined_to_bed_72_hours	2	very poor, they have been confined to bed for three weeks	Their mobility is best characterized as {mobility}.
+89f223d60986	caprini	other_pmh	Other Pmh_history_of_inflammatory_bowel_disease	1	history of inflammatory bowel disease	Other notable PMH includes {other_pmh}.
+d67ca6481e35	caprini	other_pmh	Other Pmh_an_acute_mi_sustained_during_this_hospitalization	1	an acute MI sustained during this hospitalization	Other notable PMH includes {other_pmh}.
+14e9662f16be	caprini	recent_history	Recent History_major_surgery	1	major surgery at an outside hospital	In the past month, they have had the following events: {recent_history}.
+b3e580a0d837	caprini	recent_history	Recent History_an_admission_for_sepsis	1	an admission for sepsis	In the past month, they have had the following events: {recent_history}.
+91c99ac9d48c	caprini	recent_history	Recent History_an_admission_for_pneumonia	1	an admission for pneumonia	In the past month, they have had the following events: {recent_history}.
+376f7b345511	caprini	recent_history	Recent History_a_radial_fracture_requiring_an_immobilizing_plaster_cast	2	a radial fracture requiring an immobilizing plaster cast	In the past month, they have had the following events: {recent_history}.
+9d8fecfdabfe	caprini	recent_history	Recent History_stroke_with_minimal_residual_deficits	5	stroke with minimal residual deficits	In the past month, they have had the following events: {recent_history}.
+2e42e56c22e9	caprini	recent_history	Recent History_multiple_traumatic_falls	5	multiple traumatic falls	In the past month, they have had the following events: {recent_history}.
+c7b88903c0ac	caprini	recent_history	Recent History_acute_spinal_cord_injury_causing_paralysis	5	acute spinal cord injury causing paralysis	In the past month, they have had the following events: {recent_history}.
+8c58f1972a24	caprini	surgery	Surgery_they_are_not_scheduled_for_surgery	0	They are not scheduled for surgery	{surgery}.
+833ea59f979e	caprini	surgery	Surgery_they_are_scheduled_for_a_minor_ent_surgery	1	They are scheduled for a 25-minute ENT surgery with local anesthesia only	{surgery}.
+4d8336336b5f	caprini	surgery	Surgery_they_are_scheduled_for_minor_breast_surgery	1	They are scheduled for minor breast surgery under local anesthesia and moderate sedation	{surgery}.
+24c82676c10e	caprini	surgery	Surgery_they_are_scheduled_for_removal_of_a_pilonidal_cyst_on_their_back	1	They are scheduled for removal of a pilonidal cyst on their back under local anesthesia only	{surgery}.
+de0f92169891	caprini	surgery	Surgery_they_are_scheduled_for_a_whipple	2	They are scheduled for a whipple	{surgery}.
+d7245def8636	caprini	surgery	Surgery_they_are_scheduled_for_four_hour_arthroscopic_shoulder_surgery	2	They are scheduled for four-hour arthroscopic shoulder surgery	{surgery}.
+d0b6e41bbe29	caprini	surgery	Surgery_they_are_scheduled_for_a_four_hour_laproscopic_nephrectomy	2	They are scheduled for a four-hour laproscopic nephrectomy	{surgery}.
+bfb51ae325c1	caprini	surgery	Surgery_they_are_scheduled_for_elective_major_hip_arthroplasty	5	They are scheduled for elective major hip arthroplasty	{surgery}.
+e584a82d04c2	caprini	surgery	Surgery_they_are_scheduled_for_elective_major_total_hip_arthroplasty	5	They are scheduled for elective major total hip arthroplasty	{surgery}.
+fdeeaac81342	caprini	surgery	Surgery_they_are_scheduled_for_elective_major_total_hip_replacement	5	They are scheduled for elective major total hip replacement	{surgery}.
+a671e51501f4	caprini	venous_disease	Venous Disease_current_swollen_legs	1	current swollen legs	They have a history of {venous_disease}.
+3dd311c731cb	caprini	venous_disease	Venous Disease_current_central_venous_access	2	current central venous access	They have a history of {venous_disease}.
+4321215c8160	caprini	venous_disease	Venous Disease_positive_factor_v_leiden	3	positive Factor V Leiden	They have a history of {venous_disease}.
+4270e27821b0	caprini	venous_disease	Venous Disease_elevated_serum_homocysteine	3	elevated serum homocysteine	They have a history of {venous_disease}.
+b9ce69cf02bc	caprini	venous_disease	Venous Disease_positive_lupus_anticoagulant	3	positive lupus anticoagulant	They have a history of {venous_disease}.
+b3dceecf5767	caprini	venous_disease	Venous Disease_elevated_anticardiolipin_antibody	3	elevated anticardiolipin antibody	They have a history of {venous_disease}.
+7629d54b6605	caprini	venous_disease	Venous Disease_heparin_induced_thrombocytopenia	3	heparin-induced thrombocytopenia	They have a history of {venous_disease}.
+9c5e5c9404b5	gad7	gad7_cant_stop_worrying	GAD7 Worry Two Criteria - 0 + 0	0	regarding worry, the patient notes that in the last week, they haven't experienced any loss of control in their worrying, or found themselves worrying too much about different things	Additionally, {gad7_cant_stop_worrying}.
+596a6bcf70ef	gad7	gad7_cant_stop_worrying	GAD7 Worry Two Criteria - 1 + 0	1	"regarding worry, the patient notes that in the last week, they experienced a loss of control in their worrying for several days, but did not find themselves ""worrying too much about different things"" at all"	Additionally, {gad7_cant_stop_worrying}.
+fd470a097439	gad7	gad7_cant_stop_worrying	GAD7 Worry Two Criteria - 3 + 0	3	"regarding worry, the patient notes that in the last week, they experienced a loss of control in their worrying for nearly all the days, but did not find themselves ""worrying too much about different things"" on any day."	Additionally, {gad7_cant_stop_worrying}.
+7df4c23e7556	gad7	gad7_cant_stop_worrying	GAD7 Worry Two Criteria - 3 + 2	5	"regarding worry, the patient notes that in the last week, they experienced a loss of control in their worrying for nearly all the days, and found themselves ""worrying too much about different things"" for more than half the days"	Additionally, {gad7_cant_stop_worrying}.
+2103a7631e5a	gad7	gad7_cant_stop_worrying	GAD7 Worry Two Criteria - 3 + 3	6	"regarding worry, the patient notes that in the last week, they experienced a loss of control in their worrying for nearly all the days, and found themselves ""worrying too much about different things"" nearly every day as well"	Additionally, {gad7_cant_stop_worrying}.
+53c211b820b9	gad7	gad7_difficulty	GAD7 Difficulty (Not at all)	0	minimal, they report no difficulty in continuing their daily activities	The overall impact of these feelings is that {gad7_difficulty}.
+2fcf1b7e05c5	gad7	gad7_difficulty	GAD7 Difficulty (Several days)	0	moderate, they report that it is somewhat difficult to manage their daily activities	The overall impact of these feelings is that {gad7_difficulty}.
+abcad10647ba	gad7	gad7_difficulty	GAD7 Difficulty (More than half the days)	0	high, they report that it is very difficult to manage their daily activities	The overall impact of these feelings is that {gad7_difficulty}.
+e4465ff68c31	gad7	gad7_difficulty	GAD7 Difficulty (Nearly every day)	0	severe, they report that it is extremely difficult to manage their daily activities	The overall impact of these feelings is that {gad7_difficulty}.
+01013e3d5ce6	gad7	gad7_easily_annoyed	GAD7 Easily Annoyed (Not at all)	0	patient mentions not getting easily annoyed at all during the past week	One other thing to note:  {gad7_easily_annoyed}.
+3dda361cd7f4	gad7	gad7_easily_annoyed	GAD7 Easily Annoyed (Several days)	1	they note getting easily annoyed several days in this period	One other thing to note:  {gad7_easily_annoyed}.
+af969371aff7	gad7	gad7_easily_annoyed	GAD7 Easily Annoyed (More than half the days)	2	the patient discloses getting easily annoyed more than half the days recently	One other thing to note:  {gad7_easily_annoyed}.
+2eb2aceba633	gad7	gad7_easily_annoyed	GAD7 Easily Annoyed (Nearly every day)	3	patient expresses getting easily annoyed nearly every day over the last week	One other thing to note:  {gad7_easily_annoyed}.
+3d872934b669	gad7	gad7_feeling_afraid	GAD7 Feeling Afraid (Not at all)	0	they state not feeling afraid at all during the past seven days	First, {gad7_feeling_afraid}.
+f1060e67795b	gad7	gad7_feeling_afraid	GAD7 Feeling Afraid (Several days)	1	the patient indicates feeling afraid several days in the recent week	First, {gad7_feeling_afraid}.
+faf0a4410707	gad7	gad7_feeling_afraid	GAD7 Feeling Afraid (More than half the days)	2	patient reports feeling afraid more than half the days lately	First, {gad7_feeling_afraid}.
+1c6529880447	gad7	gad7_feeling_afraid	GAD7 Feeling Afraid (Nearly every day)	3	the individual acknowledges feeling afraid nearly every day during this period	First, {gad7_feeling_afraid}.
+69d86d390260	gad7	gad7_feeling_nervous	GAD7 Feeling Nervous (Not at all)	0	the patient reports not feeling nervous at all during the past week	Also, {gad7_feeling_nervous}.
+fba647ccebfc	gad7	gad7_feeling_nervous	GAD7 Feeling Nervous (Several days)	1	they note experiencing nervousness several days over the last seven days	Also, {gad7_feeling_nervous}.
+bcce693223ad	gad7	gad7_feeling_nervous	GAD7 Feeling Nervous (More than half the days)	2	patient informed me that they felt nervous more than half the days in the past week	Also, {gad7_feeling_nervous}.
+3cd7ce491ac4	gad7	gad7_feeling_nervous	GAD7 Feeling Nervous (Nearly every day)	3	the individual states feeling nervous nearly every day recently	Also, {gad7_feeling_nervous}.
+fe9ca3c85ee2	gad7	gad7_restlessness	GAD7 Restlessness (Not at all)	0	according to their account, the patient did not feel restless at all during this time	{gad7_restlessness}.
+c0623677bf8b	gad7	gad7_restlessness	GAD7 Restlessness (Several days)	1	they communicate feeling restless several days in the past week	{gad7_restlessness}.
+e062d198884d	gad7	gad7_restlessness	GAD7 Restlessness (More than half the days)	2	patient describes feeling restless more than half the days recently	{gad7_restlessness}.
+e7c9807260ac	gad7	gad7_restlessness	GAD7 Restlessness (Nearly every day)	3	the individual reports feeling restless nearly every day over the last seven days	{gad7_restlessness}.
+98e3a2a45dbb	gad7	gad7_trouble_relaxing	GAD7 Trouble Relaxing (Not at all)	0	patient states not having trouble relaxing at all during this period	Furthermore, {gad7_trouble_relaxing}.
+77d52eb587bd	gad7	gad7_trouble_relaxing	GAD7 Trouble Relaxing (Several days)	1	they reveal having trouble relaxing several days over the last week	Furthermore, {gad7_trouble_relaxing}.
+e20e0c5cd132	gad7	gad7_trouble_relaxing	GAD7 Trouble Relaxing (More than half the days)	2	the patient reports having trouble relaxing more than half the days recently	Furthermore, {gad7_trouble_relaxing}.
+c48c0687fd59	gad7	gad7_trouble_relaxing	GAD7 Trouble Relaxing (Nearly every day)	3	patient informs that they had trouble relaxing nearly every day in the past week	Furthermore, {gad7_trouble_relaxing}.
+a3506f44bbfb	gad7	gad7_worrying_too_much	GAD7 Worrying Too Much  - placeholder	0	The patient's mother is very judgemental and controlling of the patient	{gad7_worrying_too_much}.
+d5b2b5798356	gad7	gad7_worrying_too_much	GAD7 Worrying Too Much  - placeholder	0	There has been recent disagreement in the patient's family about money that is putting pressure on the family	{gad7_worrying_too_much}.
+b8bf398bbc7e	sofa	sofa_hypotension_and_or_pressors	SOFA Mean Arterial Pressure	0	Their MAP is 73 and they are not requiring vasopressor agents	{sofa_hypotension_and_or_pressors}.
+bbfac2dca70e	sofa	sofa_hypotension_and_or_pressors	SOFA Mean Arterial Pressure MAP <70 mmHg	1	Their MAP is 68 and they are not requiring vasopressor agents	{sofa_hypotension_and_or_pressors}.
+10ce68e860b6	sofa	sofa_hypotension_and_or_pressors	SOFA Mean Arterial Pressure DOPamine ≤5 or DOBUTamine (any dose)	2	Their MAP is 72 on a low-dose dobutamine (3 mcg/kg/min)	{sofa_hypotension_and_or_pressors}.
+b2202f8cbca7	sofa	sofa_hypotension_and_or_pressors	SOFA Mean Arterial Pressure DOPamine >5 EPINEPHrine ≤0.1 or norEPINEPHrine ≤0.1	3	MAP is 62 with levo running at 0.080 mcg/kg/min	{sofa_hypotension_and_or_pressors}.
+1af2401a9361	sofa	sofa_hypotension_and_or_pressors	SOFA Mean Arterial Pressure DOPamine >15 EPINEPHrine >0.1 or norEPINEPHrine >0.1	4	MAP is 60 with epi and norepi maxed, running at 0.150 mcg/kg/min each	{sofa_hypotension_and_or_pressors}.
+feeb98a8ca80	sofa	sofa_mechanical_ventilation	SOFA Respiratory combined 0	0	ventilating spontaneously without assistance. Based on their most recent blood gas, their FiO2 is 21% and their PaO2 is 220	{sofa_pao2}{sofa_fio2}They are {sofa_mechanical_ventilation}.
+cbfeb6c2aa72	sofa	sofa_mechanical_ventilation	SOFA Respiratory combined 1	1	ventilating spontaneously with supplemental oxygen via NC. Based on their most recent blood gas, their FiO2 is 30% and their PaO2 is 90	{sofa_pao2}{sofa_fio2}They are {sofa_mechanical_ventilation}.
+3a664c7001b6	sofa	sofa_mechanical_ventilation	SOFA Respiratory combined 2	2	ventilating spontaneously with supplemental oxygen via HFNC. Based on their most recent blood gas, their FiO2 is 70% and their PaO2 is 58	{sofa_pao2}{sofa_fio2}They are {sofa_mechanical_ventilation}.
+8dfdd40b6d2a	sofa	sofa_mechanical_ventilation	SOFA Respiratory combined 3	3	intubated with a 7.0 ETT and are on VCAC. Based on their most recent blood gas, their FiO2 is 70% and their PaO2 is 72	{sofa_pao2}{sofa_fio2}They are {sofa_mechanical_ventilation}.
+131a02882210	sofa	sofa_mechanical_ventilation	SOFA Respiratory combined 4	4	intubated with a 6.0 ETT, have been maintained on VCAC. Based on their most recent blood gas, their FiO2 is 100% and their PaO2 is 65	{sofa_pao2}{sofa_fio2}They are {sofa_mechanical_ventilation}.
+9c56f4664007	meldna	is_on_dialysis	Is_On_Dialysis_True	99	They are on three-times-per-week dialysis	{is_on_dialysis}.
+1c70889378ff	meldna	is_on_dialysis	Is_On_Dialysis_False	99	They are not on dialysis	{is_on_dialysis}.
+e94472cb98c2	hasbled	hasbled_age	HASBLED Elderly	1	They are a 85yo woman	{hasbled_age}.
+0c38916d2b53	hasbled	hasbled_age	HASBLED Elderly	1	The patient is a 82yo man	{hasbled_age}.
+b42ce013807a	hasbled	hasbled_age	HASBLED Elderly	1	They are 66 years old	{hasbled_age}.
+f344003ad508	hasbled	hasbled_age	HASBLED Elderly	1	They are a 71-year-old woman	{hasbled_age}.
+3191ba212415	hasbled	hasbled_age	HASBLED Not Elderly	0	They are a 45yo woman	{hasbled_age}.
+96343c22e8b0	hasbled	hasbled_age	HASBLED Not Elderly	0	The patient is a 22yo man	{hasbled_age}.
+72149ae0c328	hasbled	hasbled_age	HASBLED Not Elderly	0	They are 60 years old	{hasbled_age}.
+174627bb1f63	hasbled	hasbled_age	HASBLED Not Elderly	0	They are a 63-year-old woman	{hasbled_age}.
+f2d0e581be38	hasbled	hasbled_alcohol	HASBLED Alcohol	1	They report drinking nine alcoholic drinks per week	{hasbled_alcohol}.
+bf9e25cfadfe	hasbled	hasbled_alcohol	HASBLED No Alcohol	0	Patient expresses abstinence from alcohol	{hasbled_alcohol}.
+65f5997e0368	hasbled	hasbled_drugs	HASBLED Drugs	1	They take ibuprofen daily	{hasbled_drugs}.
+dd39eeb938b5	hasbled	hasbled_drugs	HASBLED No Drugs	0	The individual reports not taking any drugs that might increase bleeding risk	{hasbled_drugs}.
+37b26aceacc3	hasbled	hasbled_hypertension	HASBLED Hypertension	1	They have a history of hypertension and are not on treatment. They clinic blood pressure is 165/85	{hasbled_hypertension}.
+5875a20e4b76	hasbled	hasbled_hypertension	HASBLED No Hypertension	0	Patient states no history of hypertension. Clinic blood pressure is 125/89	{hasbled_hypertension}.
+87f9c56117d0	hasbled	hasbled_labile_inr	HASBLED Labile INR	1	The patient mentions having labile INR values	{hasbled_labile_inr}.
+b8f16f395547	hasbled	hasbled_labile_inr	HASBLED Stable INR	0	They communicate having stable INR values	{hasbled_labile_inr}.
+f2e0b52bd286	hasbled	hasbled_liver_disease	HASBLED Liver Disease	1	Patient informed me that they have liver cirrhosis	{hasbled_liver_disease}.
+f159bf0bbd41	hasbled	hasbled_liver_disease	HASBLED No Liver Disease	0	The patient reports having no liver disease	{hasbled_liver_disease}.
+e4d371b83ffc	hasbled	hasbled_prior_major_bleeding	HASBLED Prior Major Bleeding	1	Last year, they were admitted to a local hospital for a GIB and required 3 units pRBCs	{hasbled_prior_major_bleeding}.
+0f2ac2a8c689	hasbled	hasbled_prior_major_bleeding	HASBLED No Prior Major Bleeding	0	According to their account, the patient has not experienced any prior major bleeding	{hasbled_prior_major_bleeding}.
+72eba6e79f96	hasbled	hasbled_renal_disease	HASBLED Renal Disease	1	They note having been diagnosed with renal disease; their creatinine is 2.5	{hasbled_renal_disease}.
+41222d24db02	hasbled	hasbled_renal_disease	HASBLED No Renal Disease	0	They reveal no history of renal disease. Their creatinine is 1.0	{hasbled_renal_disease}.
+36a3cfbdc02e	hasbled	hasbled_stroke_history	HASBLED Stroke History	1	The individual states having a previous stroke in their medical history	{hasbled_stroke_history}.
+52d72abd5eaa	hasbled	hasbled_stroke_history	HASBLED No Stroke History	0	Patient informs that they have no history of stroke	{hasbled_stroke_history}.
+f616dcedba0d	wellsdvt	wells_alternative	Wells Alternative_an_alternative_diagnosis_is_being_considered_and_is_as_likely_as_a_diagnosis_of_dvt	-2	An alternative diagnosis is being considered and is as likely as a diagnosis of DVT	{wells_alternative}.
+99fa7e0f7070	wellsdvt	wells_alternative	Wells Alternative_dvt_is_the_leading_diagnosis	0	DVT is the leading diagnosis	{wells_alternative}.
+70d9e37550b3	wellsdvt	wells_bedridden	Wells Bedridden_they_have_not_been_bedridden_recently_nor_had_recent_surgery	0	They have not been bedridden recently, nor had recent surgery	{wells_bedridden}.
+02348651e75a	wellsdvt	wells_bedridden	Wells Bedridden_they_have_been_bedridden_for_the_last_four_days	1	They have been bedridden for the last four days	{wells_bedridden}.
+f1b70064d95d	wellsdvt	wells_bedridden	Wells Bedridden_they_had_major_surgery_8_weeks_ago	1	They had major surgery 8 weeks ago	{wells_bedridden}.
+0ada4303a2df	wellsdvt	wells_cancer	Wells Cancer_they_have_no_active_cancer	0	They have no active cancer	{wells_cancer}.
+3c25e7dcb8ce	wellsdvt	wells_cancer	Wells Cancer_they_have_active_cancer	1	They have active cancer	{wells_cancer}.
+5f89f51e84db	wellsdvt	wells_collateral	Wells Collateral_they_have_no_collateral_superficial_veins_on_their_leg	0	They have no collateral superficial veins on their leg	{wells_collateral}.
+2fda1e3b3d64	wellsdvt	wells_collateral	Wells Collateral_they_have_collateral_superficial_veins_on_their_leg	1	They have collateral superficial veins on their leg	{wells_collateral}.
+6f3ba1f1bd44	wellsdvt	wells_entire_leg	Wells Entire Leg_there_is_no_other_swelling_of_the_above_the_knee	0	There is no other swelling of the above the knee	{wells_entire_leg}.
+032c6b975eee	wellsdvt	wells_entire_leg	Wells Entire Leg_they_have_swelling_of_the_entire_leg	1	They have swelling of the entire leg	{wells_entire_leg}.
+69e14bb45706	wellsdvt	wells_paralysis	Wells Paralysis_they_have_no_paralysis_paresis_or_recent_plaster_immobilization_of_the_lower_extremity	0	They have no paralysis, paresis, or recent plaster immobilization of the lower extremity	{wells_paralysis}.
+ac8a65024b4f	wellsdvt	wells_paralysis	Wells Paralysis_the_affected_leg_is_paralyzed_from_a_motorcycle_accident_years_prior	1	The affected leg is paralyzed from a motorcycle accident years prior	{wells_paralysis}.
+f4b60f022a9b	wellsdvt	wells_paralysis	Wells Paralysis_a_few_weeks_ago_the_affected_leg_was_casted_after_a_fracture	1	A few weeks ago, the affected leg was casted after a fracture	{wells_paralysis}.
+a689d7207ce5	wellsdvt	wells_paralysis	Wells Paralysis_they_have_chronic_weakness_in_the_affected_leg_due_to_a_history_of_stroke	1	They have chronic weakness in the affected leg due to a history of stroke	{wells_paralysis}.
+2808b1344959	wellsdvt	wells_pitting	Wells Pitting_they_have_no_pitting_edema_in_the_symptomatic_leg	0	They have no pitting edema in the symptomatic leg	{wells_pitting}.
+aaa8c3b7996a	wellsdvt	wells_pitting	Wells Pitting_they_have_pitting_edema_confined_to_the_symptomatic_leg	1	They have pitting edema confined to the symptomatic leg	{wells_pitting}.
+e6ecf4d10dea	wellsdvt	wells_prev_dvt	Wells Prev Dvt_they_have_no_previously_documented_dvt	0	They have no previously documented DVT	{wells_prev_dvt}.
+62c92d8684d6	wellsdvt	wells_prev_dvt	Wells Prev Dvt_they_have_a_history_of_a_prior_dvt_in_the_basilic_vein	1	They have a history of a prior DVT in the femoral vein	{wells_prev_dvt}.
+e4b2336e52b9	wellsdvt	wells_swelling	Wells Swelling_they_have_no_calf_swelling	0	They have no calf swelling	{wells_swelling}.
+bc6eb976ad30	wellsdvt	wells_swelling	Wells Swelling_they_have_swelling_of_the_left_calf_that_is_more_than_4cm_compared_to_the_other_leg	1	They have swelling of the left calf that is more than 4cm compared to the other leg	{wells_swelling}.
+d905323511d9	wellsdvt	wells_tenderness	Wells Tenderness_they_have_no_localized_tenderness_along_the_deep_venous_system	0	They have no localized tenderness along the deep venous system	{wells_tenderness}.
+f8d5639e6d9a	wellsdvt	wells_tenderness	Wells Tenderness_they_have_localized_tenderness_along_the_deep_venous_system	1	They have localized tenderness along the deep venous system	{wells_tenderness}.
+c34025017b09	nihss	nihss_ataxia	"""limb_ataxia"": ""ABSENT"""	0	No ataxia is detected when the patient performs finger-nose-finger and heel-shin tests	{nihss_ataxia}.
+34471d224a96	nihss	nihss_ataxia	"""limb_ataxia"": ""PRESENT_IN_ONE_LIMB"""	1	The patient demonstrates ataxia in one leg during coordination tests	{nihss_ataxia}.
+6c29f0170911	nihss	nihss_ataxia	"""limb_ataxia"": ""PRESENT_IN_TWO_LIMBS"""	2	Ataxia is observed in both legs when the patient attempts coordination tests	{nihss_ataxia}.
+1b3e28b9251f	nihss	nihss_commands	"""commands"": ""PERFORMS_BOTH"""	0	There is full compliance as the patient performs both simple commands: closing their eyes and making a fist	{nihss_commands}.
+7780a08e51a0	nihss	nihss_commands	"""commands"": ""PERFORMS_ONE"""	1	When asked to complete two commands, the patient successfully executes one command but struggles with the other	{nihss_commands}.
+5b5baa14b853	nihss	nihss_commands	"""commands"": ""PERFORMS_NEITHER"""	2	It is noted that the patient cannot perform either of the simple commands given: closing their eyes and making a fist	{nihss_commands}.
+840da202596d	nihss	nihss_consciousness	"""consciousness"": ""ALERT"""	0	The patient is fully alert and responsive to verbal stimuli	{nihss_consciousness}.
+118661b0a09a	nihss	nihss_consciousness	"""consciousness"": ""NOT_ALERT"""	1	It is noted that the patient is not alert, requiring repeated stimulation to elicit a response; however, they do not require painful stimuli	{nihss_consciousness}.
+d772947c4233	nihss	nihss_dysarthria	"""dysarthria"": ""NORMAL"""	0	The patient's speech is clear and easily understood	{nihss_dysarthria}.
+b513968f271a	nihss	nihss_dysarthria	"""dysarthria"": ""MILD_TO_MODERATE"""	1	It is observed that the patient's speech is slurred but mostly intelligible	{nihss_dysarthria}.
+5ee334be91cb	nihss	nihss_extinction	"""extinction"": ""NO_ABNORMALITY"""	0	The patient shows no signs of neglect or inattention to either side of their body or environment	{nihss_extinction}.
+b2e49218fe23	nihss	nihss_extinction	"""extinction"": ""VISUAL_TACTILE_AUDITORY_SPATIAL_OR_PERSONAL_INATTENTION"""	1	When presented with simultaneous stimuli on both sides, the patient consistently fails to acknowledge the stimulus on one side; however, recognizes one's own hand when presented with it	{nihss_extinction}.
+52620bb45d7a	nihss	nihss_extinction	"""extinction"": ""PROFOUND_HEMI_INATTENTION"""	2	The patient demonstrates profound hemi-inattention, unable to orient to or interact with anything presented on one side of their body or environment. In fact, they do not recognize their own hand from the affected side	{nihss_extinction}.
+0b2f48494400	nihss	nihss_facial_palsy	"""facial_palsy"": ""NORMAL"""	0	Facial movements appear symmetrical and normal when the patient smiles and shows their teeth	{nihss_facial_palsy}.
+7e47051a8778	nihss	nihss_facial_palsy	"""facial_palsy"": ""MINOR"""	1	A minor asymmetry is observed in the lower face when the patient smiles	{nihss_facial_palsy}.
+18a2f47a0da4	nihss	nihss_facial_palsy	"""facial_palsy"": ""PARTIAL"""	2	The patient shows marked asymmetry in their smile, movement is present but diminished in the lower face on one side	{nihss_facial_palsy}.
+2ecf75f37438	nihss	nihss_facial_palsy	"""facial_palsy"": ""COMPLETE"""	3	There is complete paralysis of the lower face on one side, with no movement observed when asked to smile	{nihss_facial_palsy}.
+bf0810b50418	nihss	nihss_gaze	"""gaze"": ""NORMAL"""	0	The patient's eye movements are normal, with full range in all directions	{nihss_gaze}.
+9a994c49961a	nihss	nihss_gaze	"""gaze"": ""PARTIAL_GAZE_PALSY"""	1	There is a partial gaze palsy, with the patient having difficulty looking fully to one side	{nihss_gaze}.
+48360f0d684b	nihss	nihss_gaze	"""gaze"": ""FORCED_DEVIATION"""	2	The patient exhibits forced deviation of the eyes, unable to move them past the midline in one direction	{nihss_gaze}.
+5d9ea5eb0753	nihss	nihss_language	"""language"": ""NO_APHASIA"""	0	The patient's language abilities are intact, with no difficulty in comprehension	{nihss_language}.
+f866216aa72a	nihss	nihss_language	"""language"": ""MILD_TO_MODERATE_APHASIA"""	1	It is noted that the patient has some difficulty communicating, struggling to name objects or construct complex sentences	{nihss_language}.
+d75df3d320d2	nihss	nihss_motor_arm_left	"""motor_arm_left"": ""NO_DRIFT"""	0	The left arm maintains its position without drifting for the full 10 seconds when extended	{nihss_motor_arm_left}.
+4e6281cfccd2	nihss	nihss_motor_arm_left	"""motor_arm_left"": ""DRIFT"""	1	The patient's left arm begins to drift downward within 10 seconds but does not hit the bed	{nihss_motor_arm_left}.
+a14cb02c3107	nihss	nihss_motor_arm_left	"""motor_arm_left"": ""SOME_EFFORT_AGAINST_GRAVITY"""	2	When asked to raise the left arm, the patient can lift it against gravity but cannot maintain the position for the full 10 seconds	{nihss_motor_arm_left}.
+77d219060c17	nihss	nihss_motor_arm_left	"""motor_arm_left"": ""NO_EFFORT_AGAINST_GRAVITY"""	3	The left arm falls immediately when the patient attempts to raise it, showing no effort against gravity	{nihss_motor_arm_left}.
+7b09f673312e	nihss	nihss_motor_arm_left	"""motor_arm_left"": ""NO_MOVEMENT"""	4	The patient is unable to produce any voluntary movement in the left arm	{nihss_motor_arm_left}.
+2f75d01387bf	nihss	nihss_motor_arm_right	"""motor_arm_right"": ""NO_DRIFT"""	0	The right arm maintains its position without drifting for the full 10 seconds when extended	{nihss_motor_arm_right}.
+0a19e036eb00	nihss	nihss_motor_arm_right	"""motor_arm_right"": ""DRIFT"""	1	It is noted that the patient's right arm begins to drift downward within 10 seconds but does not hit the bed	{nihss_motor_arm_right}.
+a645a25a5a2d	nihss	nihss_motor_arm_right	"""motor_arm_right"": ""SOME_EFFORT_AGAINST_GRAVITY"""	2	When instructed to raise the right arm, the patient can lift it against gravity but cannot maintain the position for the full 10 seconds	{nihss_motor_arm_right}.
+264329da65a0	nihss	nihss_motor_arm_right	"""motor_arm_right"": ""NO_EFFORT_AGAINST_GRAVITY"""	3	The right arm falls immediately when the patient attempts to raise it, showing no effort against gravity	{nihss_motor_arm_right}.
+7cebbb261bbf	nihss	nihss_motor_arm_right	"""motor_arm_right"": ""NO_MOVEMENT"""	4	There is no observable voluntary movement in the patient's right arm	{nihss_motor_arm_right}.
+4af1b35114a2	nihss	nihss_motor_leg_left	"""motor_leg_left"": ""NO_DRIFT"""	0	The left leg maintains its position without drifting for the full 5 seconds when elevated	{nihss_motor_leg_left}.
+1947cdfbaf9e	nihss	nihss_motor_leg_left	"""motor_leg_left"": ""DRIFT"""	1	The patient's left leg begins to drift downward within 5 seconds but does not hit the bed	{nihss_motor_leg_left}.
+f59589de79a9	nihss	nihss_motor_leg_left	"""motor_leg_left"": ""SOME_EFFORT_AGAINST_GRAVITY"""	2	When asked to lift the left leg, the patient can raise it against gravity but cannot maintain the position for the full 5 seconds	{nihss_motor_leg_left}.
+9c67d5de5732	nihss	nihss_motor_leg_left	"""motor_leg_left"": ""NO_EFFORT_AGAINST_GRAVITY"""	3	The left leg falls immediately when the patient attempts to lift it, showing no effort against gravity	{nihss_motor_leg_left}.
+d894d5bca479	nihss	nihss_motor_leg_left	"""motor_leg_left"": ""NO_MOVEMENT"""	4	The patient is unable to produce any voluntary movement in the left leg	{nihss_motor_leg_left}.
+e3d97a51694b	nihss	nihss_motor_leg_right	"""motor_leg_right"": ""NO_DRIFT"""	0	The right leg maintains its position without drifting for the full 5 seconds when elevated	{nihss_motor_leg_right}.
+8b431d5299ee	nihss	nihss_motor_leg_right	"""motor_leg_right"": ""DRIFT"""	1	It is observed that the patient's right leg begins to drift downward within 5 seconds but does not hit the bed	{nihss_motor_leg_right}.
+169e030d47ee	nihss	nihss_motor_leg_right	"""motor_leg_right"": ""SOME_EFFORT_AGAINST_GRAVITY"""	2	When instructed to raise the right leg, the patient can lift it against gravity but cannot maintain the position for the full 5 seconds	{nihss_motor_leg_right}.
+8ec8c2cf6aeb	nihss	nihss_motor_leg_right	"""motor_leg_right"": ""NO_EFFORT_AGAINST_GRAVITY"""	3	The right leg falls immediately when the patient attempts to lift it, showing no effort against gravity	{nihss_motor_leg_right}.
+a216009d1981	nihss	nihss_motor_leg_right	"""motor_leg_right"": ""NO_MOVEMENT"""	4	There is no observable voluntary movement in the patient's right leg	{nihss_motor_leg_right}.
+603e04b98764	nihss	nihss_questions	"""questions"": ""ANSWERS_BOTH"""	0	The patient correctly answers both questions about their age and the current month	{nihss_questions}.
+73c877d5e523	nihss	nihss_questions	"""questions"": ""ANSWERS_ONE"""	1	It is observed that the patient can only answer one of the two orientation questions correctly	{nihss_questions}.
+5ed321d260cd	nihss	nihss_questions	"""questions"": ""ANSWERS_NEITHER"""	2	The patient is unable to provide correct answers to either of the orientation questions	{nihss_questions}.
+600d66af2146	nihss	nihss_sensory	"""sensory"": ""NORMAL"""	0	The patient reports normal sensation to pinprick in all extremities	{nihss_sensory}.
+9d7b89e1da1f	nihss	nihss_sensory	"""sensory"": ""MILD_TO_MODERATE_LOSS"""	1	There is mild to moderate loss of sensation, with the patient reporting diminished or altered feeling to pinprick on one side	{nihss_sensory}.
+f661e6368928	nihss	nihss_sensory	"""sensory"": ""SEVERE_TO_TOTAL_LOSS"""	2	The patient demonstrates severe or total loss of sensation, unable to feel the pinprick stimulus on one side of the body	{nihss_sensory}.
+e050f15c4323	nihss	nihss_visual_fields	"""visual"": ""NO_VISUAL_LOSS"""	0	No visual loss is detected when testing the patient's visual fields	{nihss_visual_fields}.
+495cc0e6b34e	nihss	nihss_visual_fields	"""visual"": ""PARTIAL_HEMIANOPIA"""	1	The patient fails to detect fingers moved in the upper or lower quadrant of one visual field	{nihss_visual_fields}.
+384512048333	nihss	nihss_visual_fields	"""visual"": ""COMPLETE_HEMIANOPIA"""	2	There is a complete absence of vision in one half of the visual field on one side	{nihss_visual_fields}.
+3b02e1d63bcf	nihss	nihss_visual_fields	"""visual"": ""BILATERAL_HEMIANOPIA"""	3	The patient demonstrates bilateral hemianopia, showing no response to visual stimuli in both right and left visual fields	{nihss_visual_fields}.

@@ -1,0 +1,24 @@
+cases_per_calculator: 1000
+calculators:
+  psiport:
+    agree: 1000
+  ariscat:
+    agree: 1000
+  cci:
+    agree: 1000
+  caprini:
+    agree: 1000
+  gad7:
+    agree: 1000
+  sofa:
+    agree: 1000
+  meldna:
+    agree: 1000
+  hasbled:
+    agree: 1000
+  wellsdvt:
+    agree: 1000
+  nihss:
+    agree: 1000
+failures: []
+all_agree: true

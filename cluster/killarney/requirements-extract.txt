@@ -1,0 +1,10 @@
+# extraction benchmark: data, evaluation, CPU baselines, encoder training
+numpy
+pandas
+openpyxl
+pyyaml
+pydantic>=2
+torch
+transformers>=4.48
+accelerate
+huggingface_hub

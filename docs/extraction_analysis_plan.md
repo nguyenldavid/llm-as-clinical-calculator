@@ -1,6 +1,6 @@
 # Analysis Plan: Benchmarking Clinical Score Extraction Against a Typed Calculator API
 
-**Status:** Draft for discussion
+**Status:** Phase 0 complete. T1, A409 and T4 are built, and the CPU baselines have been run. The GPU stages are ready to run on Killarney (§11.4). Results so far are in [extraction_phase0_results.md](extraction_phase0_results.md).
 **Builds on:** Goodell et al., *Large Language Model Agents Can Use Tools to Perform Clinical Calculation*, NPJ Digital Medicine (2025), and the code and data in this repository.
 
 ---
@@ -143,12 +143,14 @@ The mapper in §5.1 must handle both cases explicitly.
 
   | Decision field (Variant D) | Raw-fact fields (Variant R) |
   |---|---|
-  | `hypertension: bool` | `systolic_bp: int \| None`, `on_antihypertensive: bool \| None` |
-  | `severe_renal_disease: bool` | `creatinine_mg_dl: float \| None`, `on_dialysis: bool \| None`, `renal_transplant: bool \| None` |
+  | `hypertension: bool` | `systolic_bp: int \| None` |
+  | `severe_renal_disease: bool` | `creatinine_mg_dl: float \| None`, `on_dialysis: bool \| None`, `kidney_transplant: bool \| None` |
   | `alcohol: bool` | `alcoholic_drinks_per_week: float \| None` |
-  | Age-banded criteria | `age_years: int \| None` |
+  | `age: int` (banded inside the calculator) | `age_years: int \| None` |
 
   Variant R is built only where a threshold exists. All other fields are the same in both variants.
+
+  *As implemented:* most OpenMedCalc request models already take raw values. MELD-Na, SOFA and PSI/PORT take labs and vitals; ARISCAT and CCI take ages and SpO₂. The threshold-in-boolean pattern is concentrated in HAS-BLED, so Variant R exists for HAS-BLED (`schemas_raw.RawRequestHASBLED`, whose `to_decision()` applies the thresholds). Wells DVT and Caprini fold clinical judgement into booleans and enums rather than numeric thresholds, so a raw-facts variant would need a different design; that is left open.
 
 ### 4.4 Missing and negated information
 
@@ -163,6 +165,8 @@ The existing schemas use plain `bool`, which merges the second and third. For th
 - Every field becomes `Optional`, with `None` meaning "not documented".
 - The gold labels separate "absent" from "not documented" based on what the vignette actually states. Several templates say "has none of the following: …", which counts as documented absence. Some cases say "unknown age".
 - For scoring, the API defaults "not documented" to the calculator's convention (usually 0 points). This is reported as its own metric (§8.3).
+
+*As implemented:* Variant D keeps the OpenMedCalc request models unchanged, so every field is required. Extractors are told to answer `false` (or a 0 dose) for criteria the text does not mention. Variant R fields are `Optional`. In the templated sets every criterion is stated or covered by a template sentence such as "no other venous or clotting disorders", so gold "not documented" occurs only in Variant R (dialysis and transplant in HAS-BLED). §8.3 becomes informative once T3, T5 or T6 provide genuinely undocumented fields.
 
 ---
 
@@ -190,15 +194,16 @@ Tasks:
 | **T5: external** | MedCalc-Bench (Khandekar et al., 2024), restricted to overlapping calculators, using its parameter annotations | External validity on case-report text | All overlapping instances |
 | **T6: real notes** *(optional)* | De-identified notes, e.g. MIMIC-IV under its data use agreement, annotated by two clinicians | Clinical validity | 30–50 per calculator |
 
-**T4 perturbations:**
+**T4 perturbations (as implemented in `perturb.py`; 1,869 cases from the first 50 T1 cases per calculator):**
 
-- *Distractors:* irrelevant comorbidities and medications.
-- *Conflicting or time-stamped values:* two creatinines on different dates, where the note says which one is current.
-- *Units:* µmol/L instead of mg/dL, °F instead of °C.
-- *Negation scope:* "denies chest pain, fever, or *recent surgery*".
-- *Laterality swaps:* NIHSS left and right.
-- *Abbreviations and shorthand:* "h/o DVT", "EtOH 9/wk".
-- *Length:* the vignette embedded in a 1,000–2,000-word note.
+- *Distractors (452):* irrelevant sentences, including a family-history sentence that names scored conditions ("their father had a stroke…"), which tests attribution.
+- *Conflicting values (150):* an older, different value next to each current lab, e.g. "creatinine 1.3 (it was 2.4 three days ago)".
+- *Units (200):* µmol/L instead of mg/dL, °F instead of °C, mmol/L glucose. Values are written with just enough precision to convert back within 0.5%.
+- *Abbreviations and shorthand (332):* e.g. "h/o DVT/PE", "EtOH 9 drinks/wk", "On HD TIW", "PMHx significant for CVA".
+- *Reorder (250):* the option sentences in random order. This defeats position cues and applies to list-style templates only.
+- *Long note (485):* the vignette embedded in a note with unrelated sections.
+
+Not yet implemented: laterality swaps (NIHSS left/right is covered by its own fields) and dedicated negation-scope rewrites (partly covered by the abbreviation and distractor sets).
 
 **T5 notes:** check MedCalc-Bench's licence and which calculators it covers before committing to this set. Its parameter names must be mapped to our schemas with the same round-trip check as §5.1.
 
@@ -213,6 +218,8 @@ Mitigations:
 - Training data for fine-tuned systems (§6) comes **only** from a separate pool of phrasings. T2 and T3 phrasings never appear in training.
 - Split by template and phrasing, never just by case.
 - Report T1 results for comparability only. **T2 and T3 are the primary evaluation sets.**
+
+*Confirmed in Phase 0:* a template-inversion baseline, which knows the templates and option phrasings and nothing clinical, scores **100%** on T1 and on all 397 matched Abacus-409 failures. It falls to 6.3% on T4. T1-style text is fully solvable by string matching.
 
 ---
 
@@ -284,7 +291,7 @@ To control cost:
 Both are computed on T2 ∪ T3:
 
 1. **Final-score exact accuracy:** the share of cases where `OpenMedCalc(predicted_request) == gold_score`. This is directly comparable with the paper.
-2. **Macro field accuracy:** per-field exact match, averaged within each calculator and then across calculators.
+2. **Macro field accuracy:** per-field accuracy, averaged within each calculator and then across calculators. A field is correct when it matches the gold value exactly, or for floats within ±1% (unit conversions round). Exact float match is reported as a secondary column.
 
 ### 8.2 Secondary endpoints
 
@@ -356,27 +363,37 @@ Per 1,000 cases, report:
 
 ## 11. Implementation plan
 
-### 11.1 Repository layout
+### 11.1 Repository layout (as built)
 
 ```
 llm_calc/extraction/
-├── gold.py            # options → CalcRequest mappers (Variant D and R), round-trip check
-├── schemas_raw.py     # Variant R request models and threshold logic
-├── datasets.py        # T1–T4 generation, phrasing pools, train/test splits
-├── perturb.py         # T4 perturbation functions
-├── extractors/
-│   ├── base.py        # Extractor protocol: extract(text, schema) -> BaseModel
-│   ├── rules.py       # medspaCy / regex
-│   ├── encoder.py     # BERT multi-head + QA
-│   ├── nuextract.py   # template conversion + inference
-│   ├── gliner.py
-│   └── llm.py         # constrained decoding (API + vLLM)
-├── evaluate.py        # field- and case-level metrics, assertion matrices
-└── stats.py           # bootstrap, McNemar, mixed-effects models
+├── __main__.py        # CLI: python -m llm_calc.extraction <command>
+├── omc.py             # OpenMedCalc request models + calculators, loaded without the web app
+├── generator.py       # exact re-implementation of the original vignette generator
+├── gold.py            # options → CalcRequest mappers (Variant D), round-trip check
+├── schemas_raw.py     # Variant R (HAS-BLED) and its threshold logic
+├── schemas.py         # field specs, JSON schemas, prompts
+├── datasets.py        # T1, TRAIN, A409, T4 builders; JSONL I/O
+├── perturb.py         # T4 perturbations
+├── phrasings.py       # T2/T3: option export, review sheets, set builders
+├── paraphrase.py      # GPU job: paraphrase candidates for clinician review
+├── units.py           # number parsing (incl. number words) and unit normalisation
+├── evaluate.py        # field- and case-level grading, risk bands, summaries
+├── stats.py           # Wilson CI, exact McNemar, bootstrap, Holm
+├── attribution.py     # Abacus-409 error attribution with a mirrored-error control
+└── extractors/
+    ├── base.py        # Extractor interface, JSON parsing
+    ├── baselines.py   # oracle, majority, template inversion
+    ├── rules.py       # System A
+    ├── encoder.py     # System B: shared encoder, classification + span heads
+    └── llm.py         # Systems C/D: NuExtract and chat LLMs via vLLM; OpenAI-compatible APIs
+cluster/killarney/     # Slurm jobs, environment setup, model manifest (§11.4)
+tests/test_extraction.py
 ```
 
-- Add an `llmcalc extraction` CLI group (`build-gold`, `build-testsets`, `run`, `evaluate`) next to the existing `experiment` commands.
-- Results go to the existing DuckDB experiments database, in new tables `extraction_run` and `extraction_field_result`.
+- The CLI is a standalone module rather than an `llmcalc` subcommand. The existing CLI builds LLM clients and needs API keys at import time; the benchmark must run on offline compute nodes without them.
+- Results are JSONL and TSV files (`predict` writes one file per system, set and variant; `evaluate` writes the summaries) rather than DuckDB tables. Flat files are easier to move between scratch and project space, and to diff.
+- GLiNER is not implemented yet.
 
 ### 11.2 Reproducibility
 
@@ -386,14 +403,43 @@ llm_calc/extraction/
 
 ### 11.3 Milestones
 
-| Phase | Deliverable | Exit criterion |
-|---|---|---|
-| 0 | Gold-label generator and mappers for 10 calculators | 100% round-trip agreement on 1,000 generated cases (or every discrepancy explained) |
-| 1 | T1–T3 test sets and the training phrasing pool | Clinician sign-off on the T2 phrasings and the T3 paraphrase sample |
-| 2 | Extractors A–D implemented, pilot on 20% of T2 | All systems produce schema-valid outputs end to end |
-| 3 | Full runs on T1–T3, plus E arms | Primary endpoints computed |
-| 4 | T4 stress, T5 external, optional T6 | Robustness analysis complete |
-| 5 | Error annotation, statistics, write-up | Manuscript draft and dataset release |
+| Phase | Deliverable | Exit criterion | Status |
+|---|---|---|---|
+| 0 | Gold-label generator and mappers for 10 calculators | 100% round-trip agreement on 1,000 generated cases (or every discrepancy explained) | **Done:** 10,000/10,000; A409 397/397 matched |
+| 1 | T1–T3 test sets and the training phrasing pool | Clinician sign-off on the T2 phrasings and the T3 paraphrase sample | T1, T4, TRAIN done; T2/T3 wait on the paraphrase job and review |
+| 2 | Extractors A–D implemented, pilot on 20% of T2 | All systems produce schema-valid outputs end to end | Implemented; CPU and stub dry runs pass; GPU pilot on Killarney next |
+| 3 | Full runs on T1–T3, plus E arms | Primary endpoints computed | Waiting on Killarney (`submit.sh all`) |
+| 4 | T4 stress, T5 external, optional T6 | Robustness analysis complete | T4 built; T5/T6 not started |
+| 5 | Error annotation, statistics, write-up | Manuscript draft and dataset release | Not started |
+
+### 11.4 Compute: Killarney (Alliance / PAICE)
+
+All GPU work runs on Killarney under the group's `aip-` allocation. The scripts and instructions are in [`cluster/killarney/`](../cluster/killarney/README.md). Design choices that follow the Alliance documentation:
+
+- **Hardware:** standard nodes have 4 × L40S 48 GB, 64 cores and 512 GB RAM. Each GPU is requested with 12 cores and 100 GB.
+  - Models up to about 9B parameters run on 1 GPU.
+  - 32B models run on 2 GPUs (tensor parallel).
+  - 70–72B models in bf16 run on 4 GPUs of one node, so no multi-node Ray is needed.
+  - The H100 nodes (8 × 80 GB) are an alternative for the 70B rows (`gpu` column of `models.tsv`).
+- **Offline compute:** every model is downloaded on a login node (`download_models.sh`). Jobs run with `HF_HUB_OFFLINE=1`.
+- **Software:** virtualenvs built from Alliance wheels (`--no-index`): an `extract` env (python/3.11, torch, transformers) and a `vllm` env (python/3.13 + opencv, as the Alliance vLLM page requires).
+- **Storage:**
+  - Predictions go to `$SCRATCH` (purged after 60 days).
+  - `evaluate` copies summaries and a tarball of predictions to project space.
+  - Models live in project space by default (70B ≈ 140 GB each).
+- **Submission:** `submit.sh` reads `models.tsv`, submits one job per row with matching `--gpus-per-node`, `--time` and `--mem`, makes GPU jobs wait on the CPU `prepare` job, and runs `evaluate` once all of them finish. It refuses to run from `$HOME`, which Killarney does not allow.
+- **Requested budget:** the upper bound from walltime limits is about 170 GPU-hours. Actual use should be well below that, since walltimes are generous.
+
+  | Stage | GPU-hours |
+  |---|---|
+  | 4 encoders | 24 |
+  | 6 NuExtract configurations | 17 |
+  | 7 LLM configurations (two at 70B) | 115 |
+  | Paraphrase jobs | 16 |
+
+- **Data governance:** synthetic sets may go to external APIs (the GPT-4o arm). Real notes (T6) are processed only on Killarney.
+
+
 
 ---
 
@@ -413,7 +459,9 @@ llm_calc/extraction/
 1. Is T6 (real notes) in scope, and under which data use agreement?
 2. Should the calculators expand beyond the 10 to cover more of the 49 from Abacus-212? This needs new typed request models for each added calculator.
 3. Which risk cut-offs are pre-specified for each calculator? Clinical input is needed.
-4. What is the compute budget for fine-tuning (encoders and NuExtract) and for frontier-API runs?
+4. What is the compute budget for fine-tuning (encoders and NuExtract) and for frontier-API runs? Killarney covers the GPU side (§11.4). API runs need keys and a budget.
+5. Clinician adjudication of the CCI liver-disease option in the released data: cirrhosis "awaiting transplant evaluation" was scored as moderate/severe (3 points), but the text only supports mild (see the results report §2.3).
+6. Killarney: which `aip-` allocation to use, whether project quota allows the 70B models in project space, and an HF token with the Llama 3.1 licence accepted.
 
 ---
 

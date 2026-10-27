@@ -1,0 +1,7 @@
+# vLLM inference (LLMs, NuExtract, paraphrase job); pin with vllm==X.Y.Z after `avail_wheels vllm`
+vllm
+pandas
+openpyxl
+pyyaml
+pydantic>=2
+huggingface_hub

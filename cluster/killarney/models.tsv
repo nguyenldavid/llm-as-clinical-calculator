@@ -1,0 +1,24 @@
+# kind	model	gpu	gpus	time	extra arguments (passed to `predict`)
+# --- encoders: fine-tuned on the TRAIN pool, then predicted ---
+encoder	emilyalsentzer/Bio_ClinicalBERT	l40s	1	06:00:00	
+encoder	microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext	l40s	1	06:00:00	
+encoder	UFNLP/gatortron-base	l40s	1	06:00:00	
+encoder	answerdotai/ModernBERT-base	l40s	1	06:00:00	
+# --- NuExtract (zero-shot and 3-shot) ---
+nuextract	numind/NuExtract-2.0-2B	l40s	1	02:00:00	
+nuextract	numind/NuExtract-2.0-8B	l40s	1	03:00:00	
+nuextract	numind/NuExtract-2.0-8B	l40s	1	03:00:00	--few-shot 3
+nuextract	numind/NuExtract3	l40s	1	03:00:00	
+nuextract	numind/NuExtract3	l40s	1	03:00:00	--few-shot 3
+nuextract	numind/NuExtract3	l40s	1	03:00:00	--constrained
+# --- general LLMs with JSON-schema constrained decoding ---
+# paper comparability: the paper's Llama arm was Llama 3.1 70B Instruct
+vllm	meta-llama/Llama-3.1-70B-Instruct	l40s	4	08:00:00	--tensor-parallel-size 4
+vllm	meta-llama/Llama-3.1-70B-Instruct	l40s	4	08:00:00	--tensor-parallel-size 4 --few-shot 3
+vllm	meta-llama/Llama-3.1-8B-Instruct	l40s	1	03:00:00	
+vllm	Qwen/Qwen2.5-7B-Instruct	l40s	1	03:00:00	
+vllm	Qwen/Qwen3-8B	l40s	1	03:00:00	--chat-template-kwargs {"enable_thinking":false}
+vllm	Qwen/Qwen3-32B	l40s	2	05:00:00	--tensor-parallel-size 2 --chat-template-kwargs {"enable_thinking":false}
+vllm	Qwen/Qwen2.5-72B-Instruct	l40s	4	08:00:00	--tensor-parallel-size 4
+# --- paraphraser for T2/T3 candidates (a family not evaluated above) ---
+paraphrase	mistralai/Mistral-Small-24B-Instruct-2501	l40s	2	04:00:00	--tensor-parallel-size 2
