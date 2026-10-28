@@ -191,6 +191,20 @@ Only ARISCAT (58% observed vs 0% mirrored) and MELD-Na (50% vs 25%) separate cle
   - The template renders as NuMind documents it.
   - 5 of 6 cases had every field correct.
   - The sixth produced malformed JSON (`"true}`). This led to the optional `--constrained` mode (JSON-schema decoding over NuExtract's own template). `models.tsv` runs NuExtract3 both natively and constrained.
+- **NuExtract-2.0-2B pilot** (transformers, CPU, unconstrained, zero-shot; 4 cases per calculator):
+
+  | Set | n | Valid | Macro field | Score accuracy (95% CI) | Risk band |
+  |---|---|---|---|---|---|
+  | T1 | 40 | 0.875 | 0.773 | 0.325 (0.175–0.475) | 0.725 |
+  | T5 | 28 | 0.714 | 0.578 | 0.179 (0.051–0.412) | 0.429 |
+
+  - **What this is:** a pipeline check on a small sample, not a result. The CIs are very wide, and the GPU runs use NuExtract3, few-shot prompting and constrained decoding.
+  - **Failure modes the full run should watch:**
+    - **Malformed JSON** (7 of 68 cases), which constrained decoding should remove.
+    - **Schema range rejections on T5** (6 cases, PSI/PORT and SOFA): numbers placed in the wrong field. The type checks catch them as intended.
+    - **T5 numbers were the weak spot:** integer fields 27% correct and decimal fields 45%, against 94% and 91% on T1.
+  - **Speed:** about 64 s per case on CPU.
+
 - **vLLM and NuExtract jobs:** dry-run end to end through the Slurm job scripts with a stand-in for vLLM that has the same call signatures. The call signatures were checked against vLLM's current source (`LLM.chat(..., chat_template_kwargs=...)`, `StructuredOutputsParams(json=...)`).
 
 ## 7. Next steps
