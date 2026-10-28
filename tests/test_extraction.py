@@ -110,3 +110,52 @@ def test_cohen_kappa():
     assert cohen_kappa(list("aabb"), list("aabb")) == 1.0
     assert abs(cohen_kappa(list("aabb"), list("abab"))) < 1e-9  # agreement at chance
     assert cohen_kappa(list("aaab"), list("aaba")) < 0.5
+
+
+def _oracle_jev_transport(records, variant):
+    """A fake TypeSafe API that answers every question from the gold labels."""
+    import math
+
+    from llm_calc.extraction import units
+    from llm_calc.extraction.extractors import jev
+
+    by_text = {r["vignette"]: r for r in records}
+
+    def send(body):
+        r = by_text[body["state"]]
+        gold, text = r["gold"][variant], body["state"]
+        specs = {f.name: f for f in schemas.field_specs(r["calculator"], variant)}
+        spans = {k: (s, e) for k, _, s, e in jev._number_candidates(text)}
+        answers = {}
+        for q, spec in body["questions"].items():
+            g = gold.get(q)
+            if spec["type"] == "noul":
+                answers[q] = {"noul": 0.95 if g else 0.05}
+            elif spec["type"] == "score":
+                idx = specs[q].choices.index(g)
+                answers[q] = {"probabilities": {str(i): float(i == idx) for i in range(len(spec["criteria"]))}}
+            elif set(spec["criteria"]) == {"present", "absent", "not_documented"}:
+                answers[q] = {"choice": {True: "present", False: "absent", None: "not_documented"}[g]}
+            elif q in specs and specs[q].kind == "enum":
+                answers[q] = {"choice": g}
+            else:
+                pick = jev.ZERO if g == 0 else jev.NONE
+                for k, (s, e) in spans.items():
+                    if g not in (None, 0) and math.isclose(
+                            units.normalise(q, units.number_value(text[s:e]), text[e:]), float(g), rel_tol=0.01):
+                        pick = k
+                        break
+                answers[q] = {"choice": pick, "confidence": 0.9}
+        return {"model": "fake", "answers": answers}
+
+    return send
+
+
+@pytest.mark.parametrize("variant", ["D", "R"])
+def test_jev_questions_and_decoding_round_trip(t1, variant):
+    """An oracle behind Jev's question types must reproduce the gold request."""
+    from llm_calc.extraction.extractors.jev import JevExtractor
+
+    records = [r for r in t1[::9] if variant in r["gold"]]
+    extractor = JevExtractor(model="fake", transport=_oracle_jev_transport(records, variant), concurrency=4)
+    assert _score_acc(extractor, records, variant) == 1.0

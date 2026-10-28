@@ -82,6 +82,7 @@ Interpretation and Assignment errors make up **56.5%** of observed failures. The
 - **RQ3. Schema design.** Does accuracy change when the schema asks for *decisions* (`hypertension: bool`, meaning uncontrolled with SBP > 160) rather than *raw facts* (`systolic_bp: 165`, with the API applying the threshold)?
 - **RQ4. Robustness.** How does performance hold up under paraphrase, distractors, conflicting values, unit changes, longer notes, and real clinical text?
 - **RQ5. Cost and deployment.** What are the cost, latency, and on-premises feasibility trade-offs? This matters because clinical text may contain protected health information (PHI).
+- **RQ6. Typed decision models.** Does a model built to answer typed questions (TypeSafe's Jev) extract calculator inputs as well as generative LLMs? And can its reported confidence decide which cases are safe to automate and which need human review?
 
 ### Pre-registered hypotheses
 
@@ -89,6 +90,7 @@ Interpretation and Assignment errors make up **56.5%** of observed failures. The
 - **H2.** On paraphrased and perturbed text, schema-constrained LLMs and NuExtract will beat rules and encoders. The gap will be largest for negation scope, laterality (NIHSS), and multi-select criteria (Caprini).
 - **H3.** "Extract, then compute" with a constrained LLM will have fewer final-score errors than the same LLM's base, RAG, and code-interpreter arms. It will match or beat its OMC arm.
 - **H4.** Raw-facts schemas will improve encoder and rule accuracy on threshold-bearing fields more than they improve LLM accuracy.
+- **H5.** Jev will be competitive with the large LLMs on yes/no and categorical fields, and weaker on numeric fields (its documentation says it struggles with numeric precision). Accuracy on the fields it keeps will rise as the confidence threshold rises.
 
 ---
 
@@ -272,14 +274,43 @@ Also include a zero-shot natural language inference (NLI) baseline for boolean f
 
 The original `base`, `rag`, `ci`, `rag_ci`, and `omc` arms are re-run on T1–T3 with the same cases, so the end-to-end and "extract, then compute" approaches can be compared directly (RQ2).
 
+### F. Typed decision API: Jev (TypeSafe AI)
+
+[Jev](https://docs.typesafe.ai) is a "System One" decision model, released in early access on 15 September 2026. It does not generate text. Each request sends a `state` (here, the clinical note) and a set of named typed questions:
+
+- **Noul:** the probability that a statement is true.
+- **Choice:** one of up to 255 options.
+- **Score:** a position on up to 10 ordered levels.
+
+Every answer carries per-option probabilities and a confidence. This matches the benchmark's design: Jev makes the narrow judgments, and the typed request plus OpenMedCalc do all the arithmetic. TypeSafe gives the same advice in its own documentation: keep math in code, and turn value extraction into a Choice over candidates found by regex.
+
+Field mapping (`extractors/jev.py`), with one request per case and every field asked as its own question:
+
+| Schema field | Jev question | Decoded as |
+|---|---|---|
+| yes/no (decision schema) | Noul | true when P(yes) > 0.5 |
+| yes/no/not documented (raw-facts schema) | Choice: present / absent / not documented | the chosen option |
+| ordered enum (NIHSS items, GAD-7 frequency, CCI severity, Caprini mobility) | Score over the levels | the most probable level; TypeSafe advises against interpolating the score |
+| other enum | Choice over the enum values | the chosen option |
+| integer / decimal | Choice over every number in the note (found by regex, shown with surrounding text), plus "zero" and "none" | code parses the chosen number and converts units |
+| SOFA mean arterial pressure | as above, plus systolic and diastolic pressure | code computes MAP when the note states only SBP/DBP |
+
+Settings:
+
+- **Model version:** pinned to `jev-1.14.0` (the `jev-latest` alias moves with releases). `jev-1.13.0` is run as a second version.
+- **Confidence:** each field's confidence is stored with the prediction, for §8.5.
+- **Validation:** an offline test puts a gold-answering fake behind Jev's question types and checks that the decoded request equals the gold request on T1, A409 and T4.
+- **Where it runs:** it is a hosted API, so it runs from any machine with `TYPESAFE_API_KEY`, not on Killarney.
+- **Data:** only synthetic sets and T5 are sent. Real notes would need a data processing agreement; TypeSafe offers zero data retention to enterprise customers.
+
 ---
 
 ## 7. Experimental matrix
 
 | Factor | Levels |
 |---|---|
-| System | A, B (each encoder), C (each model and size, zero-shot or fine-tuned), D (each LLM, zero-shot or few-shot), E (each arm) |
-| Schema | Variant D, Variant R (for systems A–D) |
+| System | A, B (each encoder), C (each model and size, zero-shot or fine-tuned), D (each LLM, zero-shot or few-shot), E (each arm), F (Jev 1.14 and 1.13) |
+| Schema | Variant D, Variant R (for systems A–D and F) |
 | Test set | T1, T2, T3, T4 (each perturbation), T5, T6 |
 | Calculator | 10 |
 | Repeats | 1 for deterministic systems; 3 for API LLMs, to measure run-to-run variation even at temperature 0 |
@@ -323,6 +354,17 @@ Per 1,000 cases, report:
 - cost (API price, or GPU-hours for local systems);
 - peak memory;
 - whether the system can run fully on-premises.
+
+### 8.5 Confidence and selective automation (RQ6)
+
+For systems that report a confidence per answer (Jev), report:
+
+- **Risk–coverage:** the accuracy of the fields kept as the least confident are deferred, and the area under that curve.
+- **Accuracy by confidence decile:** it should rise monotonically.
+- **Brier score of Jev's Noul probabilities** on yes/no fields, computed from the raw answers saved with each prediction.
+- **Operating points** at confidence thresholds 0.5, 0.7, 0.8 and 0.9: the share of fields auto-accepted, their accuracy, the share of cases where every field clears the threshold ("fully automatic"), and the final-score accuracy of those cases.
+
+The clinical question is which threshold gives acceptable score accuracy on the automated cases while deferring a manageable share to review. Thresholds are chosen on T1 and applied unchanged to T2, T3 and T5.
 
 ---
 
@@ -450,7 +492,8 @@ All GPU work runs on Killarney under the group's `aip-` allocation. The scripts 
   | 7 LLM configurations (two at 70B) | 115 |
   | Paraphrase jobs | 16 |
 
-- **Data governance:** synthetic sets may go to external APIs (the GPT-4o arm). Real notes (T6) are processed only on Killarney.
+- **Data governance:** synthetic sets and T5 may go to external APIs (the GPT-4o arm and Jev). Real notes (T6) are processed only on Killarney.
+- **Jev runs outside Killarney:** it is a hosted API. At TypeSafe's list price ($0.042 per million input tokens, output free), every set together (about 6,500 cases) comes to well under $20.
 
 
 
@@ -475,6 +518,7 @@ All GPU work runs on Killarney under the group's `aip-` allocation. The scripts 
 4. What is the compute budget for fine-tuning (encoders and NuExtract) and for frontier-API runs? Killarney covers the GPU side (§11.4). API runs need keys and a budget.
 5. Clinician adjudication of the CCI liver-disease option in the released data: cirrhosis "awaiting transplant evaluation" was scored as moderate/severe (3 points), but the text only supports mild (see the results report §2.3).
 6. Killarney: which `aip-` allocation to use, whether project quota allows the 70B models in project space, and an HF token with the Llama 3.1 licence accepted.
+7. Jev: a TypeSafe API key (`TYPESAFE_API_KEY`), and whether a data processing agreement is wanted before any non-public notes are sent.
 
 ---
 

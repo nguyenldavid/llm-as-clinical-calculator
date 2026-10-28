@@ -61,8 +61,11 @@ SYSTEMS: List[MockSystem] = [
     MockSystem("vllm:Llama-3.1-70B-Instruct:3shot", "Open LLM", 4.0, 0.5, 0.0, 2.0, "on-prem GPU"),
     MockSystem("vllm:Qwen2.5-72B-Instruct", "Open LLM", 3.9, 0.4, 0.0, 1.6, "on-prem GPU"),
     MockSystem("api:gpt-4o", "API LLM", 4.0, 0.4, 0.0, 2.5, "external API"),
+    MockSystem("jev:jev-1.14.0", "System One", 3.6, 0.3, 0.0, 0.3, "external API"),
+    MockSystem("jev:jev-1.13.0", "System One", 3.4, 0.3, 0.0, 0.3, "external API"),
 ]
-FAMILIES = ["Rules", "Encoder", "NuExtract", "Open LLM", "API LLM"]
+FAMILIES = ["Rules", "Encoder", "NuExtract", "Open LLM", "API LLM", "System One"]
+CONFIDENCE_FAMILIES = {"System One"}  # systems that report a confidence per answer
 
 SET_DIFFICULTY = {"T1": 0.0, "A409": 0.3, "T4": 0.7, "T2": 1.0, "T3": 1.2, "T5": 1.7}
 GENERATOR_PHRASED = {"T1", "A409", "T4"}
@@ -77,6 +80,7 @@ ERROR_WEIGHTS = {
     "NuExtract": [3, 2, 2, 2, 3, 2, 2],
     "Open LLM": [2, 3, 2, 2, 3, 2, 0.2],
     "API LLM": [2, 3, 1, 1, 3, 2, 0.1],
+    "System One": [3, 1, 3, 2, 2, 3, 0.1],
 }
 
 # the paper's end-to-end arms on T1, plus extract-then-compute (RQ2); placeholder accuracies
@@ -120,7 +124,7 @@ def mock_predictions(records: List[Dict], system: MockSystem, variant: str, seed
                           "raw": "", "error": "mock: unparseable", "latency_s": system.latency_s})
             continue
         gold = r["gold"][variant]
-        out = {}
+        out, confidence = {}, {}
         for spec in schemas.field_specs(r["calculator"], variant):
             logit = system.skill - SET_DIFFICULTY.get(r["test_set"], 1.0)
             if r["test_set"] in GENERATOR_PHRASED:
@@ -131,9 +135,16 @@ def mock_predictions(records: List[Dict], system: MockSystem, variant: str, seed
             if r["field_sources"][variant].get(spec.name) == "not documented":
                 logit += 1.2 if system.family in ("Rules", "Encoder") else 0.6
             value = gold.get(spec.name)
-            out[spec.name] = value if rng.random() < _sigmoid(logit) else _corrupt(spec, value, rng)
-        preds.append({"id": r["id"], "system": system.name, "variant": variant, "output": out, "raw": "",
-                      "error": None, "latency_s": system.latency_s * rng.uniform(0.8, 1.2)})
+            correct = rng.random() < _sigmoid(logit)
+            out[spec.name] = value if correct else _corrupt(spec, value, rng)
+            if system.family in CONFIDENCE_FAMILIES:
+                # informative but imperfect confidence: higher when right
+                confidence[spec.name] = rng.betavariate(7, 1.5) if correct else rng.betavariate(2.5, 2.5)
+        pred = {"id": r["id"], "system": system.name, "variant": variant, "output": out, "raw": "",
+                "error": None, "latency_s": system.latency_s * rng.uniform(0.8, 1.2)}
+        if confidence:
+            pred["confidence"] = confidence
+        preds.append(pred)
     return preds
 
 
@@ -159,7 +170,7 @@ def mock_sets(data_dir: Path = ds.DATA_DIR, per_calculator: int = 40) -> List[Di
     return records
 
 
-FIELD_KEYS = ("id", "test_set", "calculator", "system", "variant", "field", "kind", "correct", "source")
+FIELD_KEYS = ("id", "test_set", "calculator", "system", "variant", "field", "kind", "correct", "source", "confidence")
 
 
 def build(out: Path, data_dir: Path = ds.DATA_DIR, seed: int = 0) -> Dict:

@@ -145,6 +145,12 @@ def from_nuextract(calculator: str, variant: str, obj: Optional[Dict]) -> Option
     out = {}
     for f in schemas.field_specs(calculator, variant):
         v = obj.get(f.name)
+        # the model sometimes wraps a value in a list or returns another shape; keep a single
+        # scalar, otherwise treat the field as unanswered
+        if isinstance(v, list):
+            v = v[0] if len(v) == 1 else None
+        if isinstance(v, dict):
+            v = None
         if f.kind == "bool":
             v = {"true": True, "false": False, True: True, False: False}.get(v, None)
             if v is None and not f.optional:

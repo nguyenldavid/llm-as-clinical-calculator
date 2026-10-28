@@ -44,7 +44,7 @@ BLUE = {100: "#cde2fb", 150: "#b7d3f6", 200: "#9ec5f4", 250: "#86b6ef", 300: "#6
 NEUTRAL_MID = "#f0efec"
 RED_ARM = ["#f6c5c4", "#ec8a89", "#e34948", "#b8302f"]
 
-FAMILIES = ["Rules", "Encoder", "NuExtract", "Open LLM", "API LLM"]
+FAMILIES = ["Rules", "Encoder", "NuExtract", "Open LLM", "API LLM", "System One"]
 FAMILY_COLOR = dict(zip(FAMILIES, CATEGORICAL))
 SET_ORDER = ["T1", "A409", "T2", "T3", "T4", "T5"]
 PRIMARY = ("T2", "T3")
@@ -133,6 +133,8 @@ def _pct(axis):
 
 
 def _short(system: str) -> str:
+    if system.startswith("jev:"):
+        return "Jev " + system.split("jev-")[-1].rsplit(".0", 1)[0]
     return (system.replace("vllm:", "").replace("nuextract:", "").replace("encoder-", "").replace("api:", "")
             .replace("-Instruct", "").replace(":3shot", " (3-shot)").replace(":constrained", " (constrained)"))
 
@@ -165,7 +167,8 @@ def load(eval_dir: Path):
 def _guess_family(system: str) -> str:
     if system == "rules":
         return "Rules"
-    for prefix, fam in [("encoder", "Encoder"), ("nuextract", "NuExtract"), ("vllm", "Open LLM"), ("api", "API LLM")]:
+    for prefix, fam in [("encoder", "Encoder"), ("nuextract", "NuExtract"), ("vllm", "Open LLM"), ("api", "API LLM"),
+                        ("jev", "System One")]:
         if system.startswith(prefix):
             return fam
     return "Other"
@@ -215,7 +218,7 @@ def fig_headline(page: Page, cases: pd.DataFrame):
     axes[0].set_yticks(list(y.values()))
     axes[0].set_yticklabels([_short(s) for s in y])
     handles = [plt.Line2D([], [], marker="o", ls="", color=FAMILY_COLOR[f], markersize=6, label=f) for f in FAMILIES]
-    fig.legend(handles=handles, loc="upper center", ncol=5, bbox_to_anchor=(0.55, 1.02))
+    fig.legend(handles=handles, loc="upper center", ncol=len(FAMILIES), bbox_to_anchor=(0.55, 1.02))
     fig.supxlabel("Final-score accuracy (OpenMedCalc on the extracted request), 95% Wilson CI", fontsize=8.5, color=INK_2)
     fig.tight_layout(rect=(0, 0, 1, 0.96))
     page.figure(fig, "fig02_headline", "Figure 2. Final-score accuracy by system and test set",
@@ -302,7 +305,7 @@ def fig_t4(page: Page, cases: pd.DataFrame):
         index=FAMILIES, columns=[p for p in PERTURBATIONS if p in set(t4.perturbation)]) * 100
     cmap = LinearSegmentedColormap.from_list("div", [RED_ARM[3], RED_ARM[1], NEUTRAL_MID, BLUE[300], BLUE[600]])
     lim = max(10, float(abs(mat.values[~pd.isna(mat.values)]).max()))
-    fig, ax = plt.subplots(figsize=(7.6, 3.0))
+    fig, ax = plt.subplots(figsize=(7.6, 0.5 * len(FAMILIES) + 0.6))
     im = ax.imshow(mat.values, cmap=cmap, norm=TwoSlopeNorm(0, -lim, lim), aspect="auto")
     for i in range(mat.shape[0]):
         for j in range(mat.shape[1]):
@@ -334,10 +337,11 @@ def fig_field_kind(page: Page, fields: pd.DataFrame):
     kinds = ["bool", "enum", "int", "float"]
     acc = f.groupby(["family", "kind"]).correct.mean().unstack().reindex(index=FAMILIES, columns=kinds)
     fig, ax = plt.subplots(figsize=(7.2, 3.2))
-    width = 0.15
+    width = 0.8 / len(FAMILIES) - 0.01
     x = np.arange(len(kinds))
     for i, fam in enumerate(FAMILIES):
-        ax.bar(x + (i - 2) * (width + 0.01), acc.loc[fam].values, width=width, color=FAMILY_COLOR[fam],
+        ax.bar(x + (i - (len(FAMILIES) - 1) / 2) * (width + 0.01), acc.loc[fam].values, width=width,
+               color=FAMILY_COLOR[fam],
                label=fam, zorder=2)
     ax.set_xticks(x)
     ax.set_xticklabels(["yes/no", "category (enum)", "integer", "decimal"])
@@ -345,7 +349,7 @@ def fig_field_kind(page: Page, fields: pd.DataFrame):
     _pct(ax.yaxis)
     ax.set_ylabel("Field accuracy (T2 ∪ T3)")
     ax.grid(axis="x", visible=False)
-    ax.legend(ncol=5, loc="lower left", bbox_to_anchor=(0, 1.0))
+    ax.legend(ncol=len(FAMILIES), loc="lower left", bbox_to_anchor=(0, 1.0))
     fig.tight_layout()
     page.figure(fig, "fig05_field_kind", "Figure 5. Accuracy by field type",
                 "Secondary endpoint (plan §8.2). Enum fields include ordinal scales "
@@ -489,7 +493,7 @@ def fig_errors(page: Page, eval_dir: Path):
     share = e.pivot_table(index="family", columns="code", values="n", aggfunc="sum").reindex(
         index=FAMILIES, columns=codes).fillna(0)
     share = share.div(share.sum(axis=1), axis=0)
-    fig, ax = plt.subplots(figsize=(7.6, 2.9))
+    fig, ax = plt.subplots(figsize=(7.6, 0.48 * len(FAMILIES) + 0.5))
     left = pd.Series(0.0, index=share.index)
     for j, code in enumerate(codes):
         vals = share[code]
@@ -514,6 +518,85 @@ def fig_errors(page: Page, eval_dir: Path):
                 "time point or unit, threshold applied wrongly, ordinal or laterality slip, schema failure. "
                 "Real values need the two-annotator error study.")
     return share
+
+
+def _confidence_rows(fields: pd.DataFrame) -> pd.DataFrame:
+    if "confidence" not in fields:
+        raise ValueError("no system reports per-field confidence")
+    f = fields[(fields.variant == "D") & fields.confidence.notna()]
+    prim = f[f.test_set.isin(PRIMARY)]
+    f = prim if not prim.empty else f
+    if f.empty:
+        raise ValueError("no system reports per-field confidence")
+    return f
+
+
+def fig_selective(page: Page, fields: pd.DataFrame):
+    """Risk-coverage: accuracy of the fields a system keeps when it defers the least confident."""
+    plt = _plt()
+    import numpy as np
+
+    f = _confidence_rows(fields)
+    systems = sorted(f.system.unique(), reverse=True)  # newest version first
+    lows = []
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(9.2, 3.4), gridspec_kw={"width_ratios": [1.3, 1]})
+    for i, s in enumerate(systems):
+        sub = f[f.system == s].sort_values("confidence", ascending=False)
+        correct = sub.correct.astype(float).values
+        coverage = np.arange(1, len(correct) + 1) / len(correct)
+        accuracy = np.cumsum(correct) / np.arange(1, len(correct) + 1)
+        color = FAMILY_COLOR["System One"] if i == 0 else MUTED
+        keep = coverage >= 0.02  # the first few fields are too few to estimate accuracy
+        ax.plot(coverage[keep], accuracy[keep], color=color, lw=2, label=_short(s), solid_capstyle="round")
+        lows.append(accuracy[keep].min())
+    ax.set_xlim(0, 1)
+    ax.set_ylim(max(0.0, min(lows) - 0.05), 1.0)
+    ax.set_xlabel("Share of fields answered automatically (coverage)")
+    ax.set_ylabel("Accuracy of those fields")
+    _pct(ax.xaxis)
+    _pct(ax.yaxis)
+    ax.legend(loc="lower left")
+    latest = f[f.system == systems[0]]
+    bins = np.linspace(0, 1, 11)
+    idx = np.clip(np.digitize(latest.confidence, bins) - 1, 0, 9)
+    acc = latest.groupby(idx).correct.mean()
+    n = latest.groupby(idx).size()
+    ax2.bar(acc.index * 0.1 + 0.05, acc.values, width=0.08, color=FAMILY_COLOR["System One"], zorder=2)
+    ax2.set_xlim(0, 1)
+    ax2.set_ylim(0, 1)
+    _pct(ax2.yaxis)
+    ax2.set_xlabel(f"Reported confidence ({_short(systems[0])})")
+    ax2.set_ylabel("Field accuracy in bin")
+    ax2.grid(axis="x", visible=False)
+    for x_, v, k in zip(acc.index * 0.1 + 0.05, acc.values, n.values):
+        if k < 30:
+            ax2.text(x_, v + 0.02, f"n={k}", ha="center", fontsize=6.5, color=MUTED)
+    fig.tight_layout()
+    page.figure(fig, "fig12_confidence", "Figure 12. Using reported confidence to decide what to automate",
+                "Systems that return a confidence per answer (Jev) can defer uncertain fields to a human. Left: "
+                "accuracy of the fields kept as more are deferred (risk-coverage). Right: accuracy by confidence "
+                "bin; it should rise from left to right. Table 11 gives operating points.")
+
+
+def table_confidence(page: Page, fields: pd.DataFrame, cases: pd.DataFrame):
+    f = _confidence_rows(fields)
+    rows = []
+    for s in sorted(f.system.unique(), reverse=True):
+        sub = f[f.system == s]
+        per_case = sub.groupby("id").confidence.min()
+        case_ok = cases[(cases.system == s) & (cases.variant == "D")].set_index("id").score_correct
+        for tau in (0.5, 0.7, 0.8, 0.9):
+            kept = sub[sub.confidence >= tau]
+            auto_cases = per_case[per_case >= tau].index
+            rows.append({"system": _short(s), "threshold": tau,
+                         "fields auto-accepted": len(kept) / len(sub),
+                         "accuracy of auto-accepted fields": kept.correct.mean() if len(kept) else float("nan"),
+                         "cases fully automatic": len(auto_cases) / len(per_case),
+                         "score accuracy of those cases": case_ok.reindex(auto_cases).mean() if len(auto_cases)
+                         else float("nan")})
+    page.table(pd.DataFrame(rows), "Table 11. Confidence-gated operating points",
+               "A case is fully automatic when every field's confidence clears the threshold; the rest go to "
+               "review. The clinical question is which threshold gives acceptable score accuracy at useful coverage.")
 
 
 def fig_attribution_real(page: Page):
@@ -542,7 +625,7 @@ def fig_attribution_real(page: Page):
                        plt.Line2D([], [], marker="o", ls="", color=BLUE[250], label="mirrored error (control)")],
               loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2)
     fig.tight_layout()
-    page.figure(fig, "fig12_a409_attribution", "Figure 12. Can a final-score error be traced to one field?",
+    page.figure(fig, "fig13_a409_attribution", "Figure 13. Can a final-score error be traced to one field?",
                 "Real data: the 373 Abacus-409 failures with a numeric answer. Where the control is as high as the "
                 "observed share (additive scores), a one-field explanation is no evidence of which field was misread.",
                 real=True)
@@ -573,7 +656,7 @@ def fig_baselines_real(page: Page):
     ax.grid(axis="x", visible=False)
     ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=3, fontsize=7.5)
     fig.tight_layout()
-    page.figure(fig, "fig13_cpu_baselines", "Figure 13. CPU baselines across test sets",
+    page.figure(fig, "fig14_cpu_baselines", "Figure 14. CPU baselines across test sets",
                 "Real data. Perfect scores on template text (T1, A409) fall to the floor once the wording is new: "
                 "the reason T2, T3 and T5 are primary.", real=True)
 
@@ -775,6 +858,9 @@ def write_all(eval_dir: Path, out: Path, mock: bool) -> Path:
     _try(page, fig_cost, cases, systems)
     _try(page, table_ops, cases, systems)
     _try(page, table_mixed_effects_shell)
+    page.text("## Confidence and selective automation\n")
+    _try(page, fig_selective, fields)
+    _try(page, table_confidence, fields, cases)
     page.text("## Real results already available\n")
     _try(page, fig_attribution_real)
     _try(page, fig_baselines_real)

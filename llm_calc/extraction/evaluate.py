@@ -94,6 +94,7 @@ def grade(records: Iterable[Dict], predictions: Iterable[Dict]) -> Tuple[List[Di
         gold = rec["gold"][variant]
         output, invalid = validate(calc, variant, pred.get("output"))
         specs = field_specs(calc, variant)
+        confidence = pred.get("confidence") or {}  # per-field confidence, when the system reports one
         n_correct = 0
         for f in specs:
             g, p = gold.get(f.name), (output or {}).get(f.name)
@@ -106,6 +107,7 @@ def grade(records: Iterable[Dict], predictions: Iterable[Dict]) -> Tuple[List[Di
                 "system": pred["system"], "variant": variant, "field": f.name, "kind": f.kind,
                 "gold": g, "pred": p, "correct": correct, "correct_exact": exact,
                 "source": rec["field_sources"][variant].get(f.name),
+                "confidence": confidence.get(f.name),
             })
         score = predicted_score(calc, variant, output) if output is not None else None
         gold_score = rec["gold_score"]

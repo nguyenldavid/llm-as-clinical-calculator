@@ -169,10 +169,17 @@ def _make_extractor(args):
         return NuExtractExtractor(args.model, name=args.name, few_shot=args.few_shot, train_records=train,
                                   enable_thinking=args.enable_thinking, constrained=args.constrained,
                                   backend=args.backend, **engine)
+    if s == "jev":
+        from llm_calc.extraction.extractors.jev import DEFAULT_MODEL, JevExtractor
+
+        return JevExtractor(args.model or DEFAULT_MODEL, name=args.name,
+                            api_key_env=args.api_key_env or "TYPESAFE_API_KEY",
+                            concurrency=args.concurrency)
     if s == "api":
         from llm_calc.extraction.extractors.llm import OpenAICompatExtractor
 
-        return OpenAICompatExtractor(args.model, args.base_url, api_key_env=args.api_key_env, name=args.name,
+        return OpenAICompatExtractor(args.model, args.base_url, api_key_env=args.api_key_env or "OPENAI_API_KEY",
+                                     name=args.name,
                                      few_shot=args.few_shot, train_records=train, concurrency=args.concurrency)
     raise SystemExit(f"unknown system {s}")
 
@@ -341,7 +348,8 @@ def main(argv=None):
 
     s = sub.add_parser("predict", help="run one system over test sets")
     s.add_argument("--system", required=True,
-                   choices=["oracle", "majority", "template_inversion", "rules", "encoder", "vllm", "nuextract", "api"])
+                   choices=["oracle", "majority", "template_inversion", "rules", "encoder", "vllm", "nuextract", "api",
+                            "jev"])
     s.add_argument("--sets", default="T1,A409,T4")
     s.add_argument("--variants", default="D,R")
     s.add_argument("--out", required=True)
@@ -366,7 +374,7 @@ def main(argv=None):
     s.add_argument("--max-model-len", type=int, default=8192)
     s.add_argument("--gpu-memory-utilization", type=float, default=0.90)
     s.add_argument("--base-url", help="api: OpenAI-compatible base URL, e.g. https://openrouter.ai/api/v1")
-    s.add_argument("--api-key-env", default="OPENAI_API_KEY")
+    s.add_argument("--api-key-env", help="environment variable holding the key (api: OPENAI_API_KEY, jev: TYPESAFE_API_KEY)")
     s.add_argument("--concurrency", type=int, default=8)
     s.set_defaults(fn=cmd_predict)
 

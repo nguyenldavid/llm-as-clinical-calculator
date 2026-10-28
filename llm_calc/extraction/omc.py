@@ -19,6 +19,7 @@ import ast
 import copy
 import importlib.util
 import sys
+import threading
 from functools import lru_cache
 from pathlib import Path
 from typing import Callable, Dict, Type
@@ -43,21 +44,33 @@ CALCULATORS: Dict[str, tuple] = {
 }
 
 
+# API extractors call the calculators from worker threads; loading must happen once
+_LOAD_LOCK = threading.RLock()
+
+
 @lru_cache(maxsize=1)
-def datamodel():
-    """The ``api_datamodel`` module, imported without its parent package."""
+def _load_datamodel():
     name = "_omc_api_datamodel"
-    if name in sys.modules:
-        return sys.modules[name]
     spec = importlib.util.spec_from_file_location(name, OMC_DIR / "api_datamodel.py")
     module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
     spec.loader.exec_module(module)
+    sys.modules[name] = module  # registered only once fully initialised
     return module
 
 
-@lru_cache(maxsize=1)
+def datamodel():
+    """The ``api_datamodel`` module, imported without its parent package."""
+    with _LOAD_LOCK:
+        return _load_datamodel()
+
+
 def _calculate_functions() -> Dict[str, Callable]:
+    with _LOAD_LOCK:
+        return _load_calculate_functions()
+
+
+@lru_cache(maxsize=1)
+def _load_calculate_functions() -> Dict[str, Callable]:
     source = (OMC_DIR / "__init__.py").read_text()
     tree = ast.parse(source)
     wanted = {fn for _, fn in CALCULATORS.values()}

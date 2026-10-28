@@ -25,6 +25,7 @@ The GPU systems (encoders, NuExtract, LLMs) are implemented and were dry-run end
 | System C (NuExtract 2.0 / NuExtract3) | Implemented. CPU sanity check of NuExtract-2.0-2B only. |
 | System D (vLLM, schema-constrained) | Implemented. Dry-run with a vLLM stand-in only. |
 | System D (API models, e.g. GPT-4o) | Implemented (OpenAI-compatible client). Not run: no API keys in this environment. |
+| System F (Jev, TypeSafe's typed decision API) | Implemented: fields mapped to Noul / Choice / Score, with numbers picked from regex candidates. An offline oracle test reproduces the gold labels exactly. The API is reachable from this session; it needs a `TYPESAFE_API_KEY` to run. |
 | T2 / T3 | Pipeline built. Waiting on the paraphrase job (Killarney), then clinician review. |
 | T5 (MedCalc-Bench Verified, external notes) | **Done.** 637 notes for 7 shared calculators, built on demand (CC-BY-SA, not committed) (§4.1). |
 | T6 (real notes) | Not started. Open decision in plan §13. |

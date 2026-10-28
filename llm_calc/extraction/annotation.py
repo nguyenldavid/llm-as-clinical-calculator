@@ -46,7 +46,8 @@ SHEET_COLUMNS = ["uid", "test_set", "calculator", "field", "gold", "predicted", 
 def _family(system: str) -> str:
     if system == "rules":
         return "Rules"
-    for prefix, fam in [("encoder", "Encoder"), ("nuextract", "NuExtract"), ("vllm", "Open LLM"), ("api", "API LLM")]:
+    for prefix, fam in [("encoder", "Encoder"), ("nuextract", "NuExtract"), ("vllm", "Open LLM"), ("api", "API LLM"),
+                        ("jev", "System One")]:
         if system.startswith(prefix):
             return fam
     return "Other"

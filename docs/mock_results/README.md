@@ -57,6 +57,8 @@ T5 is built locally from MedCalc-Bench Verified (CC-BY-SA) and is not committed.
 | Llama-3.1-70B (3-shot) | Open LLM | on-prem GPU | 4 × L40S |
 | Qwen2.5-72B | Open LLM | on-prem GPU | 4 × L40S |
 | gpt-4o | API LLM | external API | external API |
+| Jev 1.14 | System One | external API |  |
+| Jev 1.13 | System One | external API |  |
 
 From `cluster/killarney/models.tsv`. Encoders are fine-tuned on TRAIN; all LLM rows use JSON-schema constrained decoding unless marked otherwise.
 
@@ -91,6 +93,8 @@ Primary endpoint 1 (plan §8.1). Rows are grouped by system family and sorted by
 | Llama-3.1-8B | Open LLM | 0.698 | 0.324 [0.292, 0.357] | 0.799 | 0.497 | 0.194 | 0.925 |
 | Qwen2.5-7B | Open LLM | 0.693 | 0.302 [0.272, 0.335] | 0.806 | 0.539 | 0.223 | 0.931 |
 | gpt-4o | API LLM | 0.892 | 0.585 [0.551, 0.619] | 0.916 | 0.756 | 0.485 | 0.969 |
+| Jev 1.14 | System One | 0.792 | 0.480 [0.446, 0.515] | 0.892 | 0.666 | 0.368 | 0.969 |
+| Jev 1.13 | System One | 0.752 | 0.446 [0.412, 0.481] | 0.870 | 0.609 | 0.280 | 0.953 |
 
 Score = final-score accuracy, OpenMedCalc on the extracted request. Macro field = per-field accuracy averaged within calculator, then across calculators. Valid = schema-valid outputs.
 
@@ -104,16 +108,21 @@ H1/H2 (plan §3). The label is the drop in percentage points from T1 to the prim
 
 | comparison | systems | n | only first right | only second right | Δ accuracy | p (exact McNemar) | p (Holm) |
 |---|---|---|---|---|---|---|---|
-| Rules vs Encoder | rules vs ModernBERT-base | 800 | 91 | 141 | -0.062 | 0.001 | 0.002 |
+| Rules vs Encoder | rules vs ModernBERT-base | 800 | 91 | 141 | -0.062 | 0.001 | 0.004 |
 | Rules vs NuExtract | rules vs NuExtract3 (3-shot) | 800 | 62 | 307 | -0.306 | <0.001 | <0.001 |
 | Rules vs Open LLM | rules vs Qwen2.5-72B | 800 | 46 | 370 | -0.405 | <0.001 | <0.001 |
 | Rules vs API LLM | rules vs gpt-4o | 800 | 46 | 384 | -0.422 | <0.001 | <0.001 |
+| Rules vs System One | rules vs Jev 1.14 | 800 | 56 | 310 | -0.318 | <0.001 | <0.001 |
 | Encoder vs NuExtract | ModernBERT-base vs NuExtract3 (3-shot) | 800 | 74 | 269 | -0.244 | <0.001 | <0.001 |
 | Encoder vs Open LLM | ModernBERT-base vs Qwen2.5-72B | 800 | 59 | 333 | -0.343 | <0.001 | <0.001 |
 | Encoder vs API LLM | ModernBERT-base vs gpt-4o | 800 | 53 | 341 | -0.360 | <0.001 | <0.001 |
+| Encoder vs System One | ModernBERT-base vs Jev 1.14 | 800 | 72 | 276 | -0.255 | <0.001 | <0.001 |
 | NuExtract vs Open LLM | NuExtract3 (3-shot) vs Qwen2.5-72B | 800 | 140 | 219 | -0.099 | <0.001 | <0.001 |
 | NuExtract vs API LLM | NuExtract3 (3-shot) vs gpt-4o | 800 | 121 | 214 | -0.116 | <0.001 | <0.001 |
-| Open LLM vs API LLM | Qwen2.5-72B vs gpt-4o | 800 | 155 | 169 | -0.017 | 0.470 | 0.470 |
+| NuExtract vs System One | NuExtract3 (3-shot) vs Jev 1.14 | 800 | 170 | 179 | -0.011 | 0.669 | 0.940 |
+| Open LLM vs API LLM | Qwen2.5-72B vs gpt-4o | 800 | 155 | 169 | -0.017 | 0.470 | 0.940 |
+| Open LLM vs System One | Qwen2.5-72B vs Jev 1.14 | 800 | 209 | 139 | 0.088 | <0.001 | <0.001 |
+| API LLM vs System One | gpt-4o vs Jev 1.14 | 800 | 216 | 132 | 0.105 | <0.001 | <0.001 |
 
 Family (i) of the pre-specified comparisons (plan §9), on T2 ∪ T3, paired by case.
 
@@ -127,18 +136,18 @@ Primary endpoint 2 (plan §8.1), broken down by calculator. Scale starts at 50%.
 
 ### Table 5. Final-score accuracy by calculator (best system per family, T2 ∪ T3) (MOCK)
 
-| calculator | n | Rules: rules | Encoder: ModernBERT-base | NuExtract: NuExtract3 (3-shot) | Open LLM: Qwen2.5-72B | API LLM: gpt-4o |
-|---|---|---|---|---|---|---|
-| ariscat | 80 | 0.200 | 0.338 | 0.600 | 0.775 | 0.800 |
-| caprini | 80 | 0.013 | 0.075 | 0.175 | 0.325 | 0.338 |
-| cci | 80 | 0.113 | 0.075 | 0.375 | 0.500 | 0.463 |
-| gad7 | 80 | 0.175 | 0.225 | 0.388 | 0.575 | 0.562 |
-| hasbled | 80 | 0.300 | 0.412 | 0.650 | 0.725 | 0.725 |
-| meldna | 80 | 0.300 | 0.463 | 0.738 | 0.812 | 0.812 |
-| nihss | 80 | 0.087 | 0.087 | 0.250 | 0.225 | 0.300 |
-| psiport | 80 | 0.050 | 0.075 | 0.312 | 0.450 | 0.475 |
-| sofa | 80 | 0.150 | 0.250 | 0.625 | 0.700 | 0.675 |
-| wellsdvt | 80 | 0.237 | 0.250 | 0.575 | 0.588 | 0.700 |
+| calculator | n | Rules: rules | Encoder: ModernBERT-base | NuExtract: NuExtract3 (3-shot) | Open LLM: Qwen2.5-72B | API LLM: gpt-4o | System One: Jev 1.14 |
+|---|---|---|---|---|---|---|---|
+| ariscat | 80 | 0.200 | 0.338 | 0.600 | 0.775 | 0.800 | 0.625 |
+| caprini | 80 | 0.013 | 0.075 | 0.175 | 0.325 | 0.338 | 0.287 |
+| cci | 80 | 0.113 | 0.075 | 0.375 | 0.500 | 0.463 | 0.338 |
+| gad7 | 80 | 0.175 | 0.225 | 0.388 | 0.575 | 0.562 | 0.512 |
+| hasbled | 80 | 0.300 | 0.412 | 0.650 | 0.725 | 0.725 | 0.475 |
+| meldna | 80 | 0.300 | 0.463 | 0.738 | 0.812 | 0.812 | 0.812 |
+| nihss | 80 | 0.087 | 0.087 | 0.250 | 0.225 | 0.300 | 0.175 |
+| psiport | 80 | 0.050 | 0.075 | 0.312 | 0.450 | 0.475 | 0.400 |
+| sofa | 80 | 0.150 | 0.250 | 0.625 | 0.700 | 0.675 | 0.662 |
+| wellsdvt | 80 | 0.237 | 0.250 | 0.575 | 0.588 | 0.700 | 0.512 |
 
 Per-calculator n is about 200 per system, so these rows are descriptive (plan §9).
 
@@ -177,6 +186,8 @@ Plan §8.3. Undocumented criteria test whether a system invents findings (halluc
 | Llama-3.1-8B | 0.324 | 0.755 | 0.212 | 3.819 |
 | Qwen2.5-7B | 0.302 | 0.757 | 0.198 | 3.679 |
 | gpt-4o | 0.585 | 0.873 | 0.500 | 1.734 |
+| Jev 1.14 | 0.480 | 0.858 | 0.380 | 2.436 |
+| Jev 1.13 | 0.446 | 0.805 | 0.356 | 2.636 |
 
 Risk bands are provisional (`evaluate.RISK_BANDS`) until a clinician signs off the cut-offs. The gap between all-fields-correct and score accuracy measures how often errors cancel out.
 
@@ -204,12 +215,12 @@ RQ2/H3. The first five arms are the original study's (re-run on the same T1 case
 
 | arm | GPT-4o | Llama 3.1 70B |
 |---|---|---|
-| base | 0.703 | 0.556 |
-| rag | 0.766 | 0.623 |
-| ci | 0.816 | 0.655 |
-| rag_ci | 0.808 | 0.698 |
-| omc (agent) | 0.922 | 0.857 |
-| extract→compute | 0.958 | 0.946 |
+| base | 0.718 | 0.552 |
+| rag | 0.803 | 0.625 |
+| ci | 0.799 | 0.647 |
+| rag_ci | 0.837 | 0.675 |
+| omc (agent) | 0.936 | 0.858 |
+| extract→compute | 0.964 | 0.932 |
 
 Table view of Figure 9.
 
@@ -230,6 +241,7 @@ Plan §10. Share of annotated field errors by code: missed fact, hallucinated va
 | NuExtract | 0.189 | 0.129 | 0.126 | 0.122 | 0.183 | 0.126 | 0.125 |
 | Open LLM | 0.144 | 0.209 | 0.139 | 0.142 | 0.211 | 0.141 | 0.015 |
 | API LLM | 0.164 | 0.261 | 0.076 | 0.087 | 0.238 | 0.163 | 0.010 |
+| System One | 0.210 | 0.072 | 0.214 | 0.141 | 0.138 | 0.218 | 0.007 |
 
 Table view of Figure 10.
 
@@ -262,6 +274,8 @@ RQ5. Colour is where the system can run; this matters for patient data. The best
 | Llama-3.1-8B | 0.300 | 0.354 | on-prem GPU | 0.083 |
 | Qwen2.5-7B | 0.299 | 0.354 | on-prem GPU | 0.083 |
 | gpt-4o | 2.494 | 2.955 | external API | — |
+| Jev 1.14 | 0.301 | 0.354 | external API | — |
+| Jev 1.13 | 0.301 | 0.354 | external API | — |
 
 Plan §8.4. Real latency comes from `latency_s` in each prediction; GPU-hours scale it by the GPUs in `models.tsv`; API cost is added from the provider's invoice.
 
@@ -286,16 +300,39 @@ Plan §8.4. Real latency comes from `latency_s` in each prediction; GPU-hours sc
 
 Plan §9: correct ~ system + schema_variant + field_type + test_set + system:test_set + (1|calculator) + (1|case) + (1|field). Fitted on real field-level rows only; no mock values.
 
+## Confidence and selective automation
+
+### Figure 12. Using reported confidence to decide what to automate (MOCK)
+
+![Figure 12. Using reported confidence to decide what to automate](figures/fig12_confidence.png)
+
+Systems that return a confidence per answer (Jev) can defer uncertain fields to a human. Left: accuracy of the fields kept as more are deferred (risk-coverage). Right: accuracy by confidence bin; it should rise from left to right. Table 11 gives operating points.
+
+### Table 11. Confidence-gated operating points (MOCK)
+
+| system | threshold | fields auto-accepted | accuracy of auto-accepted fields | cases fully automatic | score accuracy of those cases |
+|---|---|---|---|---|---|
+| Jev 1.14 | 0.500 | 0.942 | 0.934 | 0.476 | 0.714 |
+| Jev 1.14 | 0.700 | 0.786 | 0.955 | 0.092 | 0.878 |
+| Jev 1.14 | 0.800 | 0.601 | 0.964 | 0.018 | 0.929 |
+| Jev 1.14 | 0.900 | 0.301 | 0.968 | 0.000 | — |
+| Jev 1.13 | 0.500 | 0.938 | 0.914 | 0.466 | 0.697 |
+| Jev 1.13 | 0.700 | 0.775 | 0.941 | 0.077 | 0.919 |
+| Jev 1.13 | 0.800 | 0.590 | 0.950 | 0.014 | 1.000 |
+| Jev 1.13 | 0.900 | 0.297 | 0.958 | 0.000 | — |
+
+A case is fully automatic when every field's confidence clears the threshold; the rest go to review. The clinical question is which threshold gives acceptable score accuracy at useful coverage.
+
 ## Real results already available
 
-### Figure 12. Can a final-score error be traced to one field? (REAL)
+### Figure 13. Can a final-score error be traced to one field? (REAL)
 
-![Figure 12. Can a final-score error be traced to one field?](figures/fig12_a409_attribution.png)
+![Figure 13. Can a final-score error be traced to one field?](figures/fig13_a409_attribution.png)
 
 Real data: the 373 Abacus-409 failures with a numeric answer. Where the control is as high as the observed share (additive scores), a one-field explanation is no evidence of which field was misread.
 
-### Figure 13. CPU baselines across test sets (REAL)
+### Figure 14. CPU baselines across test sets (REAL)
 
-![Figure 13. CPU baselines across test sets](figures/fig13_cpu_baselines.png)
+![Figure 14. CPU baselines across test sets](figures/fig14_cpu_baselines.png)
 
 Real data. Perfect scores on template text (T1, A409) fall to the floor once the wording is new: the reason T2, T3 and T5 are primary.
