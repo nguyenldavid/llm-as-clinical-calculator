@@ -35,10 +35,11 @@ print(snapshot_download(sys.argv[1], local_files_only=True))
 PY
 }
 
-# test sets present in the repository (T2/T3 appear once reviewed sheets are built)
+# test sets present in the repository (T2/T3 appear once reviewed sheets are built,
+# T5 once build-t5 has run on a login node)
 available_sets() {
     local sets=()
-    for s in T1 A409 T2 T3 T4; do
+    for s in T1 A409 T2 T3 T4 T5; do
         [ -f "$REPO_DIR/llm_calc/data/extraction/$s.jsonl" ] && sets+=("$s")
     done
     (IFS=,; echo "${sets[*]}")

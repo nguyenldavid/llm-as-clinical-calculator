@@ -114,6 +114,17 @@ def cmd_build_t3(args):
     print(f"T3 {len(t3)}")
 
 
+def cmd_build_t5(args):
+    from llm_calc.extraction import medcalc
+
+    source = Path(args.source) if args.source else medcalc.download(Path(args.data_dir) / "external" / "medcalc-bench")
+    records, report = medcalc.build_t5(source, tuple(args.splits.split(",")))
+    ds.write_jsonl(records, Path(args.data_dir) / "T5.jsonl")
+    (Path(args.data_dir) / "T5_build_report.yaml").write_text(yaml.safe_dump(report, sort_keys=False))
+    print(f"T5 {len(records)} records from {medcalc.REPO}@{medcalc.REVISION[:12]}")
+    print(yaml.safe_dump(report, sort_keys=False))
+
+
 def cmd_train_encoder(args):
     from llm_calc.extraction.extractors import encoder
 
@@ -154,7 +165,8 @@ def _make_extractor(args):
         from llm_calc.extraction.extractors.llm import NuExtractExtractor
 
         return NuExtractExtractor(args.model, name=args.name, few_shot=args.few_shot, train_records=train,
-                                  enable_thinking=args.enable_thinking, constrained=args.constrained, **engine)
+                                  enable_thinking=args.enable_thinking, constrained=args.constrained,
+                                  backend=args.backend, **engine)
     if s == "api":
         from llm_calc.extraction.extractors.llm import OpenAICompatExtractor
 
@@ -177,6 +189,13 @@ def cmd_predict(args):
         records = ds.load_set(set_name, Path(args.data_dir))
         for variant in args.variants.split(","):
             todo = [r for r in records if schemas.has_variant(r["calculator"], variant) and variant in r["gold"]]
+            if args.per_calculator:
+                taken, picked = collections.Counter(), []
+                for r in todo:
+                    if taken[r["calculator"]] < args.per_calculator:
+                        taken[r["calculator"]] += 1
+                        picked.append(r)
+                todo = picked
             if args.limit:
                 todo = todo[: args.limit]
             if not todo:
@@ -204,7 +223,7 @@ def cmd_evaluate(args):
     data_dir = Path(args.data_dir)
     records = {}
     for path in sorted(data_dir.glob("*.jsonl")):
-        if path.stem in {"T1", "T2", "T3", "T4", "A409"}:
+        if path.stem in {"T1", "T2", "T3", "T4", "T5", "A409"}:
             for r in ds.read_jsonl(path):
                 records[r["id"]] = r
     field_rows, case_rows = [], []
@@ -234,6 +253,7 @@ def cmd_evaluate(args):
     _write_tsv(summary, out / "summary.tsv")
     _write_tsv([r for r in by_pert if r["test_set"] == "T4" and r["calculator"] == "ALL"], out / "t4_by_perturbation.tsv")
     _write_tsv(ev.field_accuracy_by_kind(field_rows), out / "by_field_kind.tsv")
+    _write_tsv(ev.field_accuracy_by_documentation(field_rows), out / "by_documentation.tsv")
     ds.write_jsonl(case_rows, out / "cases.jsonl")
     ds.write_jsonl(field_rows, out / "fields.jsonl")
 
@@ -246,6 +266,18 @@ def cmd_evaluate(args):
                      f"{r['score_acc_ci']} | {r['band_acc']:.3f} |")
     (out / "summary.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
+
+
+def cmd_mock_results(args):
+    from llm_calc.extraction import mock
+
+    print(mock.build(Path(args.out), Path(args.data_dir), seed=args.seed))
+
+
+def cmd_figures(args):
+    from llm_calc.extraction import figures
+
+    print(figures.write_all(Path(args.eval_dir), Path(args.out), mock=args.mock))
 
 
 def main(argv=None):
@@ -283,6 +315,11 @@ def main(argv=None):
     s.add_argument("--sheet", required=True)
     s.set_defaults(fn=cmd_build_t3)
 
+    s = sub.add_parser("build-t5", help="T5 from MedCalc-Bench Verified (CC-BY-SA; not committed)")
+    s.add_argument("--source", help="directory with test_data.csv/train_data.csv (default: download pinned revision)")
+    s.add_argument("--splits", default="test,train", help="MedCalc-Bench splits to include")
+    s.set_defaults(fn=cmd_build_t5)
+
     s = sub.add_parser("train-encoder", help="fine-tune the multi-head encoder")
     s.add_argument("--base-model", required=True, help="HF id or local path (pre-downloaded on Killarney)")
     s.add_argument("--out", required=True)
@@ -303,6 +340,7 @@ def main(argv=None):
     s.add_argument("--out", required=True)
     s.add_argument("--name", help="system name in results (default derived from the model)")
     s.add_argument("--limit", type=int, default=0, help="first N records per set (pilot runs)")
+    s.add_argument("--per-calculator", type=int, default=0, help="first N records per calculator (pilot runs)")
     s.add_argument("--batch-size", type=int, default=256)
     s.add_argument("--train", help="training JSONL (majority, template_inversion, few-shot examples)")
     s.add_argument("--train-per-calculator", type=int, default=200)
@@ -311,6 +349,8 @@ def main(argv=None):
     s.add_argument("--few-shot", type=int, default=0)
     s.add_argument("--unconstrained", action="store_true", help="vllm: disable JSON-schema decoding")
     s.add_argument("--constrained", action="store_true", help="nuextract: add JSON-schema decoding (off by default)")
+    s.add_argument("--backend", choices=["vllm", "transformers"], default="vllm",
+                   help="nuextract: transformers runs without vLLM (CPU pilots, laptops)")
     s.add_argument("--trust-remote-code", action="store_true")
     s.add_argument("--chat-template-kwargs", help='vllm: JSON, e.g. \'{"enable_thinking": false}\'')
     s.add_argument("--enable-thinking", type=lambda v: v.lower() == "true", default=False,
@@ -327,6 +367,17 @@ def main(argv=None):
     s.add_argument("--pred-dir", required=True)
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_evaluate)
+
+    s = sub.add_parser("mock-results", help="mock evaluation outputs for designing figures (not results)")
+    s.add_argument("--out", required=True)
+    s.add_argument("--seed", type=int, default=0)
+    s.set_defaults(fn=cmd_mock_results)
+
+    s = sub.add_parser("figures", help="figures and tables from an evaluation directory")
+    s.add_argument("--eval-dir", required=True, help="output of `evaluate` or `mock-results`")
+    s.add_argument("--out", required=True)
+    s.add_argument("--mock", action="store_true", help="watermark everything as mock")
+    s.set_defaults(fn=cmd_figures)
 
     args = p.parse_args(argv)
     return args.fn(args) or 0

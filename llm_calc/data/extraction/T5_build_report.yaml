@@ -1,0 +1,23 @@
+rows: 654
+invalid_request: 17
+score_agrees: 629
+score_disagrees: 8
+by_calculator:
+  wellsdvt:
+    agrees: 77
+  meldna:
+    agrees: 76
+    invalid_request: 15
+    disagrees: 6
+  hasbled:
+    agrees: 83
+    disagrees: 2
+  cci:
+    agrees: 100
+  psiport:
+    agrees: 97
+  sofa:
+    agrees: 96
+    invalid_request: 2
+  caprini:
+    agrees: 100

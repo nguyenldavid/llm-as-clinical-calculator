@@ -177,3 +177,16 @@ def field_accuracy_by_kind(field_rows: List[Dict], by=("system", "variant", "tes
     for r in field_rows:
         groups[tuple(r[k] for k in by) + (r["kind"],)].append(r["correct"])
     return [dict(zip(by + ("kind",), k), n=len(v), acc=_mean(v)) for k, v in sorted(groups.items())]
+
+
+def field_accuracy_by_documentation(field_rows: List[Dict], by=("system", "variant", "test_set")) -> List[Dict]:
+    """Field accuracy split by whether the gold value is stated in the text.
+
+    Only external sets mark undocumented fields (``source == "not documented"``,
+    T5); there the gold value is the calculator's default (absent / 0).
+    """
+    groups = defaultdict(list)
+    for r in field_rows:
+        documented = r.get("source") != "not documented"
+        groups[tuple(r[k] for k in by) + (documented,)].append(r["correct"])
+    return [dict(zip(by + ("documented",), k), n=len(v), acc=_mean(v)) for k, v in sorted(groups.items())]

@@ -53,6 +53,11 @@ echo 'export HF_TOKEN=hf_...' > ~/.hf_token && chmod 600 ~/.hf_token
 module spider python; avail_wheels vllm # confirm the module versions in config.sh
 cluster/killarney/setup_envs.sh
 cluster/killarney/download_models.sh    # or: download_models.sh nuextract
+
+# T5 (MedCalc-Bench Verified) needs internet, so build it here, not in a job
+module load $MODULES_EXTRACT && source "$ENV_DIR/extract/bin/activate"
+PYTHONPATH=$PWD python -m llm_calc.extraction build-t5   # writes llm_calc/data/extraction/T5.jsonl (git-ignored)
+deactivate
 ```
 
 ## Running
@@ -95,7 +100,7 @@ python -m llm_calc.extraction predict --system nuextract --model numind/NuExtrac
 | `nuextract` | 1 × L40S | NuExtract with its native JSON template. `--few-shot 3` adds in-context examples; `--constrained` adds JSON-schema decoding. |
 | `vllm` | 1–4 × L40S | Chat LLM with JSON-schema constrained decoding. 70B models use tensor parallelism across the 4 GPUs of one standard node. |
 | `paraphrase` | 2 × L40S | Writes T2 (`options`) or T3 (`vignettes`) candidate sheets for clinician review. |
-| `evaluate` | CPU | Grades everything under `$RUN_ROOT/preds` and copies the results to project space. |
+| `evaluate` | CPU | Grades everything under `$RUN_ROOT/preds`, renders the figures and tables (the real version of `docs/mock_results/`), and copies the results to project space. |
 
 Resources per row are set in `models.tsv`. Each GPU gets 12 cores and 100 GB of host memory, which fits within a standard node's 16 cores and 128 GB per GPU.
 

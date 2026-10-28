@@ -81,3 +81,24 @@ def test_rules_run_on_every_set(t1):
         records = ds.load_set(name)[::25]
         preds = RulesExtractor().run(records, "D")
         assert all(p["output"] is not None for p in preds)
+
+
+def test_sofa_ventilated_patients_score_moderate_ratios():
+    """Ventilated, P/F 250: 2 respiratory points (OpenMedCalc used to give 0)."""
+    base = {"pao2": 100.0, "fio2": 40.0, "mechanical_ventilation": True, "platelets": 200,
+            "glasgow_coma_scale": 15, "bilirubin": 0.5, "map": 80.0, "dopamine_dose": 0.0,
+            "dobutamine_dose": 0.0, "epinephrine_dose": 0.0, "norepinephrine_dose": 0.0,
+            "creatinine": 0.8, "urine_output": 1500.0}
+    assert gold.score("sofa", base) == 2
+    assert gold.score("sofa", dict(base, mechanical_ventilation=False)) == 2
+    assert gold.score("sofa", dict(base, pao2=60.0)) == 3  # P/F 150, ventilated
+
+
+def test_t5_mapping_agrees_with_medcalc_bench():
+    """Needs build-t5 (MedCalc-Bench is not committed); skipped otherwise."""
+    path = ds.DATA_DIR / "T5.jsonl"
+    if not path.exists():
+        pytest.skip("T5 not built")
+    t5 = list(ds.read_jsonl(path))
+    agree = sum(r["meta"]["score_agrees"] for r in t5) / len(t5)
+    assert agree > 0.98

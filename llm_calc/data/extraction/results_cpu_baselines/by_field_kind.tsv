@@ -11,6 +11,10 @@ majority	D	T4	bool	12951	0.621
 majority	D	T4	enum	5196	0.3372
 majority	D	T4	float	3142	0.485
 majority	D	T4	int	4212	0.433
+majority	D	T5	bool	6307	0.7293
+majority	D	T5	enum	697	0.3429
+majority	D	T5	float	1482	0.2773
+majority	D	T5	int	1547	0.0491
 majority	R	A409	bool	210	0.5952
 majority	R	A409	float	60	0.5833
 majority	R	A409	int	60	0.5333
@@ -32,6 +36,10 @@ oracle	D	T4	bool	12951	1.0
 oracle	D	T4	enum	5196	1.0
 oracle	D	T4	float	3142	1.0
 oracle	D	T4	int	4212	1.0
+oracle	D	T5	bool	6307	1.0
+oracle	D	T5	enum	697	1.0
+oracle	D	T5	float	1482	1.0
+oracle	D	T5	int	1547	1.0
 oracle	R	A409	bool	210	1.0
 oracle	R	A409	float	60	1.0
 oracle	R	A409	int	60	1.0
@@ -53,6 +61,10 @@ rules	D	T4	bool	12951	1.0
 rules	D	T4	enum	5196	1.0
 rules	D	T4	float	3142	1.0
 rules	D	T4	int	4212	1.0
+rules	D	T5	bool	6307	0.8435
+rules	D	T5	enum	697	0.7676
+rules	D	T5	float	1482	0.6127
+rules	D	T5	int	1547	0.6658
 rules	R	A409	bool	210	1.0
 rules	R	A409	float	60	1.0
 rules	R	A409	int	60	1.0
@@ -74,6 +86,10 @@ template_inversion	D	T4	bool	12951	0.592
 template_inversion	D	T4	enum	5196	0.3333
 template_inversion	D	T4	float	3142	0.4198
 template_inversion	D	T4	int	4212	0.4371
+template_inversion	D	T5	bool	6307	0.6182
+template_inversion	D	T5	enum	697	0.3257
+template_inversion	D	T5	float	1482	0.1559
+template_inversion	D	T5	int	1547	0.0472
 template_inversion	R	A409	bool	210	1.0
 template_inversion	R	A409	float	60	1.0
 template_inversion	R	A409	int	60	1.0

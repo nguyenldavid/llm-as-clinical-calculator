@@ -5,7 +5,7 @@
 **Cluster jobs:** [`cluster/killarney/`](../cluster/killarney/README.md)
 **Tests:** `python -m pytest tests/test_extraction.py`
 
-This report covers what has been built and run so far. It covers Phase 0 (per-field gold labels), the T1, A409 and T4 test sets, the CPU baselines, and an analysis of the released Abacus-409 failures.
+This report covers what has been built and run so far. It covers Phase 0 (per-field gold labels), the T1, A409, T4 and T5 test sets, the CPU baselines, and an analysis of the released Abacus-409 failures. T5 is the external set built from MedCalc-Bench Verified.
 
 The GPU systems (encoders, NuExtract, LLMs) are implemented and were dry-run end to end. They have **not** been run for results yet; that is the Killarney step. T2 and T3 also wait on that step, followed by clinician review.
 
@@ -26,7 +26,9 @@ The GPU systems (encoders, NuExtract, LLMs) are implemented and were dry-run end
 | System D (vLLM, schema-constrained) | Implemented. Dry-run with a vLLM stand-in only. |
 | System D (API models, e.g. GPT-4o) | Implemented (OpenAI-compatible client). Not run: no API keys in this environment. |
 | T2 / T3 | Pipeline built. Waiting on the paraphrase job (Killarney), then clinician review. |
-| T5 (MedCalc-Bench), T6 (real notes) | Not started. Open decisions in plan §13. |
+| T5 (MedCalc-Bench Verified, external notes) | **Done.** 637 notes for 7 shared calculators, built on demand (CC-BY-SA, not committed) (§4.1). |
+| T6 (real notes) | Not started. Open decision in plan §13. |
+| Figures and tables | **Mock shells for every planned experiment** in [mock_results/](mock_results/README.md). The same code renders the real page from Killarney output. |
 
 ## 2. Phase 0: gold labels
 
@@ -62,7 +64,10 @@ Matching needed one correction. `data.xlsx` was **edited after the experiment**:
 
    They are kept, because they are part of what the original models saw.
 5. **The OpenMedCalc request models enforce physiological ranges** (for example pH < 8.4, temperature < 50 °C). An extractor that places a number in the wrong field gets a schema-validation failure instead of a silently wrong score. This is the type-safety property the plan relies on, and the evaluator counts such outputs as invalid.
-6. **The OpenMedCalc web app cannot start from a fresh clone.** `llm_calc/tools/openmedcalc/calculator_docs/` is git-ignored, and every calculator reads its markdown. The benchmark therefore loads the calculator functions directly from source, without the web app (`extraction/omc.py`).
+6. **OpenMedCalc SOFA under-scored ventilated patients with a P/F ratio of 200–399.** These patients got 0 respiratory points instead of 2 (200–299) or 1 (300–399): `calculate_sofa` only scored ventilated patients below 200. This was found by cross-checking against MedCalc-Bench, where all 22 SOFA disagreements were exactly this case. **Fixed.** The paper's ventilated vignettes all have P/F < 200, so its ground truth is unaffected.
+7. **OpenMedCalc counts HAS-BLED "elderly" as age ≥ 65.** The original HAS-BLED definition and MDCalc use > 65. Two MedCalc-Bench patients aged exactly 65 disagree by one point because of this. No vignette in the paper is 65. **Not changed**; it needs a clinician's decision.
+8. **The type-safe schema can reject real patients.** The MELD-Na request model requires 110 < Na < 160, so 15 MedCalc-Bench patients with severe hypo- or hypernatraemia cannot be expressed, although MELD-Na clamps sodium to 125–137 anyway. Two MedCalc-Bench rows have GCS 1 or 2, which is impossible (minimum 3); these are annotation errors. All 17 rows are excluded from T5 and listed in `T5_build_report.yaml`.
+9. **The OpenMedCalc web app cannot start from a fresh clone.** `llm_calc/tools/openmedcalc/calculator_docs/` is git-ignored, and every calculator reads its markdown. The benchmark therefore loads the calculator functions directly from source, without the web app (`extraction/omc.py`).
 
 ### 2.4 Schema variants
 
@@ -80,6 +85,7 @@ The decision schema (D) and the raw-facts schema (R) differ only where a thresho
 | T1 | 1,000 (100 per calculator) | Original generator, fresh seeds |
 | A409 | 397 | Released failures, matched to seeds |
 | T4 | 1,869 | T1 cases × 6 perturbations: distractors 452, long note 485, abbreviations 332, reorder 250, units 200, conflicting values 150 |
+| T5 | 637 | MedCalc-Bench Verified (pinned revision `58fc3de`), test and train splits, 7 shared calculators |
 | TRAIN | about 19,000 (2,000 per calculator, minus duplicates of test vignettes) | Generator, separate seed range |
 
 Some perturbations apply only to some calculators. Units, for example, apply only where labs are given. Every T4 case keeps its T1 gold labels, and `meta.base_id` links it back for paired comparison.
@@ -88,12 +94,12 @@ Some perturbations apply only to some calculators. Units, for example, apply onl
 
 Score accuracy is computed by OpenMedCalc from the extracted request. A field is correct when it is exact, or within 1% for floats. Full tables are in `llm_calc/data/extraction/results_cpu_baselines/`.
 
-| System | T1 score acc | A409 score acc | T4 score acc | T4 macro field acc |
-|---|---|---|---|---|
-| Oracle (harness check) | 1.000 | 1.000 | 1.000 | 1.000 |
-| Majority class per field (floor) | 0.067 | 0.033 | 0.051 | 0.467 |
-| Template inversion (memorisation ceiling) | **1.000** | **1.000** | **0.063** | 0.440 |
-| Rules, System A (*in-sample*, see below) | 1.000 | 0.967 | 1.000 | 1.000 |
+| System | T1 score acc | A409 score acc | T4 score acc | T4 macro field acc | **T5 score acc** | **T5 macro field acc** |
+|---|---|---|---|---|---|---|
+| Oracle (harness check) | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| Majority class per field (floor) | 0.067 | 0.033 | 0.051 | 0.467 | 0.053 | 0.450 |
+| Template inversion (memorisation ceiling) | **1.000** | **1.000** | **0.063** | 0.440 | 0.077 | 0.377 |
+| Rules, System A (*in-sample on T1/T4*) | 1.000 | 0.967 | 1.000 | 1.000 | **0.155** | **0.737** |
 
 **Template inversion settles the T1 question.** It knows the templates and option phrasings and nothing clinical, yet it solves all of T1 and every one of the 397 vignettes that GPT-4o and Llama 3.1 got wrong. As soon as the wording changes (T4), it falls to the majority floor. So T1 and A409 measure whether a system can read these particular sentences, not whether it can extract clinical criteria. This confirms the plan's decision to make T2 and T3 the primary sets.
 
@@ -101,7 +107,36 @@ Score accuracy is computed by OpenMedCalc from the extracted request. A field is
 
 - Their A409 result (0.967) reflects a single disagreement, the CCI ambiguity in §2.3(2). The rules apply the Charlson definition.
 - Their T1/T4 results show how far a developer who can see the data can push hand-written rules. They do not estimate how rules perform on unseen text.
-- T2 and T3, written by a different model family and reviewed by a clinician, are where System A gets a fair test.
+- T2 and T3, written by a different model family and reviewed by a clinician, are where System A gets a fair test. So is T5 (§4.1).
+
+### 4.1 T5: the first out-of-sample result
+
+T5 uses MedCalc-Bench Verified notes: case-report excerpts and synthetic notes written by other people, with extracted parameters annotated. The seven calculators shared with this benchmark give 654 rows. 637 map to valid OpenMedCalc requests (§2.3.8).
+
+- **The mapping is checked against MedCalc-Bench's own answers.** OpenMedCalc's score on the mapped request agrees with MedCalc-Bench's answer in **629 of 637** cases, after the SOFA fix. Of the remaining eight, six are MELD-Na rounding or dialysis-handling differences and two are the HAS-BLED age-65 rule.
+- **Undocumented criteria are recorded.** Criteria that MedCalc-Bench did not annotate (21% of field instances) are marked "not documented" in `field_sources`. The gold value for these is the calculator default.
+- **The rules system was not tuned on T5.** I had not read the T5 notes while writing it and will not tune it on them, so this is a genuine out-of-sample estimate:
+  - **Score accuracy:** 15.5% [12.9%, 18.6%], against 100% on T1/T4 and a 5.3% majority floor.
+  - **Macro field accuracy:** 0.737, against 0.450 for the majority floor.
+  - **Undocumented fields:** 96% correct (mostly "absent").
+  - **Documented fields:** 73% correct.
+  - **Validity:** 2.7% of its requests are rejected by the schema's range checks.
+- **Where the rules fail:** mostly on numbers phrased differently from the templates ("partial pressure of oxygen", "BP 128/76", "FiO2 of 40%"), and on SOFA's MAP. MedCalc-Bench gives systolic and diastolic pressure, so the MAP has to be *computed* from them. A pure extractor cannot fill a derived field from text alone, which is another case for raw-facts schemas.
+- **Template inversion falls to the floor (7.7%)** on external notes, as expected.
+
+Per-calculator rules results on T5:
+
+| Calculator | Score acc | Macro field acc |
+|---|---|---|
+| HAS-BLED | 0.40 | 0.69 |
+| CCI | 0.25 | 0.89 |
+| Wells DVT | 0.19 | 0.74 |
+| PSI | 0.12 | 0.74 |
+| MELD-Na | 0.06 | 0.69 |
+| Caprini | 0.05 | 0.87 |
+| SOFA | 0.03 | 0.53 |
+
+Many-field scores (Caprini has 32 fields) can be wrong on the final score even when most fields are right.
 
 ## 5. What final-score errors reveal: Abacus-409 attribution
 

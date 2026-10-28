@@ -1247,16 +1247,16 @@ def calculate_sofa(calc: CalcRequestSOFA):
     # Respiratory system
     resp_sof_score = 0
     pao2_fio2_ratio = calc.pao2 / (calc.fio2 / 100.0)
-    if calc.mechanical_ventilation:
-        if pao2_fio2_ratio < 100:
-            resp_sof_score += 4
-        elif pao2_fio2_ratio < 200:
-            resp_sof_score += 3
-    else:
-        if pao2_fio2_ratio < 300:
-            resp_sof_score += 2
-        elif pao2_fio2_ratio < 400:
-            resp_sof_score += 1
+    # 3-4 points need respiratory support; ventilated patients with a ratio of
+    # 200-399 still score 1-2 like everyone else
+    if calc.mechanical_ventilation and pao2_fio2_ratio < 100:
+        resp_sof_score += 4
+    elif calc.mechanical_ventilation and pao2_fio2_ratio < 200:
+        resp_sof_score += 3
+    elif pao2_fio2_ratio < 300:
+        resp_sof_score += 2
+    elif pao2_fio2_ratio < 400:
+        resp_sof_score += 1
     # print(f"resp_sof_score: {resp_sof_score}")
 
     # Coagulation

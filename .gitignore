@@ -231,3 +231,6 @@ cython_debug/
 .idea/
 .idea/*
 .aider*
+# extraction benchmark: MedCalc-Bench (CC-BY-SA-4.0) and anything derived from it stay local
+llm_calc/data/extraction/external/
+llm_calc/data/extraction/T5.jsonl

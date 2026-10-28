@@ -1,6 +1,6 @@
 # Analysis Plan: Benchmarking Clinical Score Extraction Against a Typed Calculator API
 
-**Status:** Phase 0 complete. T1, A409 and T4 are built, and the CPU baselines have been run. The GPU stages are ready to run on Killarney (§11.4). Results so far are in [extraction_phase0_results.md](extraction_phase0_results.md).
+**Status:** Phase 0 complete. T1, A409, T4 and T5 (MedCalc-Bench Verified) are built, and the CPU baselines have been run. The GPU stages are ready to run on Killarney (§11.4). Results so far are in [extraction_phase0_results.md](extraction_phase0_results.md). Mock versions of every planned figure and table are in [mock_results/](mock_results/README.md).
 **Builds on:** Goodell et al., *Large Language Model Agents Can Use Tools to Perform Clinical Calculation*, NPJ Digital Medicine (2025), and the code and data in this repository.
 
 ---
@@ -206,6 +206,13 @@ Tasks:
 Not yet implemented: laterality swaps (NIHSS left/right is covered by its own fields) and dedicated negation-scope rewrites (partly covered by the abbreviation and distractor sets).
 
 **T5 notes:** check MedCalc-Bench's licence and which calculators it covers before committing to this set. Its parameter names must be mapped to our schemas with the same round-trip check as §5.1.
+
+*As implemented (`medcalc.py`):*
+- **Source:** MedCalc-Bench Verified at a pinned revision, CC-BY-SA-4.0. T5 is built on demand and never committed.
+- **Coverage:** seven calculators overlap (Caprini, CCI, HAS-BLED, MELD-Na, PSI/PORT, SOFA, Wells DVT), giving 654 rows from both splits.
+- **Validity:** 637 rows map to valid requests. The other 17 have values outside the OpenMedCalc ranges.
+- **Agreement:** OpenMedCalc's score matches MedCalc-Bench's answer in 629 of 637 cases.
+- **Undocumented criteria:** criteria the annotators did not record are kept as "not documented" (21% of field instances), which makes T5 the set for §8.3.
 
 **T6 notes:** real notes must never be sent to external APIs unless the data use agreement explicitly allows it. On T6, run only on-premises systems (rules, encoders, NuExtract, open-weight LLMs).
 

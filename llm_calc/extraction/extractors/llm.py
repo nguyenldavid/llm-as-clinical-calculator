@@ -159,18 +159,45 @@ class NuExtractExtractor(Extractor):
     def __init__(self, model: str, name: Optional[str] = None, few_shot: int = 0,
                  train_records: Optional[List[Dict]] = None, max_tokens: int = 1024,
                  instructions: bool = True, enable_thinking: Optional[bool] = False, constrained: bool = False,
-                 **engine_kwargs):
+                 backend: str = "vllm", **engine_kwargs):
         self.name = name or (f"nuextract:{os.path.basename(model.rstrip('/'))}" + (f":{few_shot}shot" if few_shot else "")
                              + (":constrained" if constrained else ""))
         self.constrained = constrained
-        engine_kwargs.setdefault("trust_remote_code", True)
-        engine_kwargs.setdefault("limit_mm_per_prompt", {"image": 0})
-        self.llm = load_vllm(model, **engine_kwargs)
+        self.backend = backend
+        if backend == "transformers":
+            # for laptops and CPU pilots; no constrained decoding on this path
+            if constrained:
+                raise ValueError("--constrained needs the vllm backend")
+            self._load_transformers(model)
+        else:
+            engine_kwargs.setdefault("trust_remote_code", True)
+            engine_kwargs.setdefault("limit_mm_per_prompt", {"image": 0})
+            self.llm = load_vllm(model, **engine_kwargs)
         self.few_shot = few_shot
         self.train = train_records or []
         self.max_tokens = max_tokens
         self.instructions = instructions
         self.enable_thinking = enable_thinking
+
+    def _load_transformers(self, model: str):
+        import torch
+        from transformers import AutoModelForImageTextToText, AutoProcessor
+
+        self.processor = AutoProcessor.from_pretrained(model, trust_remote_code=True, padding_side="left")
+        self.hf_model = AutoModelForImageTextToText.from_pretrained(
+            model, trust_remote_code=True, dtype=torch.bfloat16,
+            device_map="auto" if torch.cuda.is_available() else None)
+        self.hf_model.eval()
+
+    def _generate_transformers(self, conversations, template_kwargs) -> List[str]:
+        import torch
+
+        texts = [self.processor.tokenizer.apply_chat_template(c, tokenize=False, add_generation_prompt=True,
+                                                              **template_kwargs) for c in conversations]
+        inputs = self.processor(text=texts, padding=True, return_tensors="pt").to(self.hf_model.device)
+        with torch.inference_mode():
+            out = self.hf_model.generate(**inputs, do_sample=False, num_beams=1, max_new_tokens=self.max_tokens)
+        return self.processor.batch_decode(out[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)
 
     def _template_kwargs(self, calc: str, variant: str) -> Dict:
         kwargs = {"template": json.dumps(nuextract_template(calc, variant), indent=4)}
@@ -192,16 +219,19 @@ class NuExtractExtractor(Extractor):
         for r in records:
             by_calc.setdefault(r["calculator"], []).append(r)
         for calc, group in by_calc.items():
-            # NuExtract is used natively by default; --constrained adds JSON-schema decoding
-            params = _sampling_params(nuextract_json_schema(calc, variant) if self.constrained else None,
-                                      self.max_tokens)
             conversations = [[{"role": "user", "content": [{"type": "text", "text": r["vignette"]}]}] for r in group]
             start = time.perf_counter()
-            results = self.llm.chat(conversations, sampling_params=params, use_tqdm=False,
-                                    chat_template_kwargs=self._template_kwargs(calc, variant))
+            if self.backend == "transformers":
+                texts = self._generate_transformers(conversations, self._template_kwargs(calc, variant))
+            else:
+                # NuExtract is used natively by default; --constrained adds JSON-schema decoding
+                params = _sampling_params(nuextract_json_schema(calc, variant) if self.constrained else None,
+                                          self.max_tokens)
+                results = self.llm.chat(conversations, sampling_params=params, use_tqdm=False,
+                                        chat_template_kwargs=self._template_kwargs(calc, variant))
+                texts = [res.outputs[0].text for res in results]
             per_case = (time.perf_counter() - start) / max(len(group), 1)
-            for r, res in zip(group, results):
-                text = res.outputs[0].text
+            for r, text in zip(group, texts):
                 # NuExtract3 in thinking mode emits reasoning before the JSON
                 obj = parse_json_object(text.split("</think>")[-1])
                 out.append(prediction(r, self.name, variant, from_nuextract(calc, variant, obj), raw=text,
