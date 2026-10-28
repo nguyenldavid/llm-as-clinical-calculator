@@ -1,6 +1,6 @@
 # Analysis Plan: Benchmarking Clinical Score Extraction Against a Typed Calculator API
 
-**Status:** Phase 0 complete. T1, A409, T4 (including prompt-injection and omission perturbations) and T5 (MedCalc-Bench Verified) are built, and the CPU baselines have been run. The full statistical analysis (§9), clinician reference arm and contamination probe are implemented and exercised on mock results. The GPU stages are ready to run on Killarney (§11.4). Results so far are in [extraction_phase0_results.md](extraction_phase0_results.md). Mock versions of every planned figure and table are in [mock_results/](mock_results/README.md).
+**Status:** Phase 0 complete. T1, A409, T4 (including prompt-injection and omission perturbations) and T5 (MedCalc-Bench Verified) are built, and the CPU baselines have been run. The full statistical analysis (§9), clinician reference arm and contamination probe are implemented and exercised on mock results. The GPU stages are ready to run on Killarney (§11.4). Results so far are in [extraction_phase0_results.md](extraction_phase0_results.md). Mock versions of every planned figure and table are in [mock_results/](mock_results/README.md). A paper outline with sample text is in [paper_draft.md](paper_draft.md).
 **Builds on:** Goodell et al., *Large Language Model Agents Can Use Tools to Perform Clinical Calculation*, NPJ Digital Medicine (2025), and the code and data in this repository.
 
 ---
