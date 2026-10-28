@@ -159,3 +159,127 @@ def test_jev_questions_and_decoding_round_trip(t1, variant):
     records = [r for r in t1[::9] if variant in r["gold"]]
     extractor = JevExtractor(model="fake", transport=_oracle_jev_transport(records, variant), concurrency=4)
     assert _score_acc(extractor, records, variant) == 1.0
+
+
+def test_cluster_bootstrap_widens_for_correlated_rows():
+    import numpy as np
+
+    from llm_calc.extraction import stats
+
+    rng = np.random.default_rng(0)
+    iid = rng.random(1000) < 0.9
+    r = stats.cluster_bootstrap(iid, range(1000))
+    lo, hi = stats.wilson(int(iid.sum()), 1000)
+    assert abs(r["lo"] - lo) < 0.01 and abs(r["hi"] - hi) < 0.01  # matches Wilson for independent rows
+    # 200 clusters of 5 identical rows carry the information of 200 rows, not 1000
+    clustered = np.repeat(rng.random(200) < 0.9, 5)
+    rc = stats.cluster_bootstrap(clustered, np.repeat(np.arange(200), 5))
+    assert (rc["hi"] - rc["lo"]) > 1.8 * (r["hi"] - r["lo"])
+
+
+def test_macro_weights_and_paired_difference():
+    from llm_calc.extraction import stats
+
+    cells = [("a", "x"), ("a", "y"), ("b", "z")]
+    w = stats.macro_weights(cells)
+    assert w[("a", "x")] == 0.25 and w[("b", "z")] == 0.5
+    # macro mean: calculator a = mean(1, 0) = 0.5, calculator b = 1 -> 0.75
+    r = stats.cluster_bootstrap([1, 0, 1], [1, 2, 3], cells, w, n_boot=50)
+    assert abs(r["est"] - 0.75) < 1e-12
+    d = stats.paired([True, True, False, True], [False, True, False, False], [1, 2, 3, 4], n_boot=50)
+    assert d["est"] == 0.5 and d["a_only"] == 2 and d["b_only"] == 0
+
+
+def test_calibration_metrics():
+    from llm_calc.extraction import stats
+
+    perfect = stats.calibration([0.95] * 20 + [0.05] * 20, [1] * 19 + [0] + [0] * 19 + [1], range(40), n_boot=50)
+    assert perfect["ece"] < 1e-9
+    assert stats.auroc([0.9, 0.8, 0.2, 0.1], [1, 1, 0, 0]) == 1.0
+    assert stats.auroc([0.5, 0.5], [1, 0]) == 0.5
+    assert stats.aurc([0.9, 0.1], [1, 0]) == 0.25  # risk 0 at coverage 1/2, 1/2 at coverage 1
+
+
+def test_power_helpers():
+    from llm_calc.extraction import stats
+
+    assert abs(stats._norm_ppf(0.975) - 1.959964) < 1e-6
+    assert abs(stats._norm_ppf(0.001) + 3.090232) < 1e-6
+    # Connor (1987): n=2000, 10% discordant pairs -> about 2 points detectable
+    assert 0.018 < stats.mde_paired(2000, 0.10) < 0.022
+    assert stats.mde_paired(200, 0.10) > stats.mde_paired(2000, 0.10)
+
+
+def test_gee_field_model_recovers_system_effect():
+    import numpy as np
+
+    from llm_calc.extraction import stats
+
+    rng = np.random.default_rng(1)
+    rows = []
+    for case in range(300):
+        for system, p in (("good", 0.9), ("bad", 0.6)):
+            for k, kind in enumerate(("bool", "int")):
+                rows.append({"correct": rng.random() < p, "system": system, "test_set": "T1" if case % 2 else "T2",
+                             "kind": kind, "calculator": "c1" if case % 3 else "c2", "cluster": case})
+    res = stats.gee_field_model(pd.DataFrame(rows), reference_system="bad")
+    coef = res["coefficients"].set_index("term")
+    or_good = coef.loc["C(system, Treatment('bad'))[T.good]", "or"]
+    assert 3 < or_good < 12  # true odds ratio (0.9/0.1) / (0.6/0.4) = 6
+    assert "C(system, Treatment('bad')):C(test_set, Treatment('T1'))" in set(res["terms"].term)
+
+
+def test_grade_sets_clusters_for_copies_and_notes(t1):
+    base = t1[0]
+    copy = dict(base, id="T4-units-" + base["id"], test_set="T4", meta={"perturbation": "units", "base_id": base["id"]})
+    note = dict(base, id="T5-x", test_set="T5", meta={"note_id": "pmc-1"})
+    preds = [{"id": r["id"], "system": "s", "variant": "D", "output": r["gold"]["D"]} for r in (base, copy, note)]
+    fields, cases = ev.grade([base, copy, note], preds)
+    clusters = {c["id"]: c["cluster"] for c in cases}
+    assert clusters[copy["id"]] == clusters[base["id"]] == base["id"]
+    assert clusters["T5-x"] == "note:pmc-1"
+    assert {f["cluster"] for f in fields if f["id"] == copy["id"]} == {base["id"]}
+
+
+def test_clinician_sheets_round_trip(t1, tmp_path):
+    import csv
+
+    from llm_calc.extraction import clinician
+
+    cases = clinician.sample_cases(t1, per_calculator=2)
+    assert len(cases) == 2 * len({r["calculator"] for r in t1})
+    clinician.write_sheets(cases, tmp_path, readers=("A",))
+    by_id = {r["id"]: r for r in cases}
+    for path in (tmp_path / "reader_A").glob("*.tsv"):
+        rows = list(csv.reader(open(path), delimiter="\t"))
+        for row in rows[3:]:
+            gold = by_id[row[0]]["gold"]["D"]
+            for i, name in enumerate(rows[0][2:-1], start=2):
+                v = gold.get(name)
+                row[i] = "" if v is None else ("yes" if v is True else "no" if v is False else str(v))
+            row[-1] = "45"
+        csv.writer(open(path, "w", newline=""), delimiter="\t").writerows(rows)
+    preds = clinician.read_sheets(tmp_path / "reader_A", "A")
+    _, graded = ev.grade(cases, preds)
+    assert len(graded) == len(cases) and all(c["score_correct"] for c in graded)
+    assert all(p["latency_s"] == 45 for p in preds)
+
+
+def test_contamination_scores():
+    from llm_calc.extraction import contamination as c
+
+    ref = "the patient was admitted with chest pain and shortness of breath after a long flight home".split()
+    hit = c.score(" ".join(ref), ref)
+    assert hit["verbatim"] and hit["rougeL"] == 1.0
+    miss = c.score("unrelated words entirely", ref)
+    assert not miss["verbatim"] and miss["longest_ngram"] == 0
+    assert c.split_note("too short") is None
+
+
+def test_t4_omission_gold_marks_deleted_finding(t1):
+    t4 = ds.load_set("T4")
+    omissions = [r for r in t4 if r["meta"]["perturbation"] == "omission"]
+    assert omissions
+    for r in omissions[:50]:
+        assert "not documented" in r["field_sources"]["D"].values()
+        assert r["gold_score"] == gold.score(r["calculator"], r["gold"]["D"])

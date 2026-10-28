@@ -8,3 +8,7 @@ torch
 transformers>=4.48
 accelerate
 huggingface_hub
+# statistics and figures (evaluate job)
+scipy
+statsmodels
+matplotlib

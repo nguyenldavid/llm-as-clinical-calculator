@@ -1,6 +1,6 @@
 # Analysis Plan: Benchmarking Clinical Score Extraction Against a Typed Calculator API
 
-**Status:** Phase 0 complete. T1, A409, T4 and T5 (MedCalc-Bench Verified) are built, and the CPU baselines have been run. The GPU stages are ready to run on Killarney (§11.4). Results so far are in [extraction_phase0_results.md](extraction_phase0_results.md). Mock versions of every planned figure and table are in [mock_results/](mock_results/README.md).
+**Status:** Phase 0 complete. T1, A409, T4 (including prompt-injection and omission perturbations) and T5 (MedCalc-Bench Verified) are built, and the CPU baselines have been run. The full statistical analysis (§9), clinician reference arm and contamination probe are implemented and exercised on mock results. The GPU stages are ready to run on Killarney (§11.4). Results so far are in [extraction_phase0_results.md](extraction_phase0_results.md). Mock versions of every planned figure and table are in [mock_results/](mock_results/README.md).
 **Builds on:** Goodell et al., *Large Language Model Agents Can Use Tools to Perform Clinical Calculation*, NPJ Digital Medicine (2025), and the code and data in this repository.
 
 ---
@@ -196,7 +196,7 @@ Tasks:
 | **T5: external** | MedCalc-Bench (Khandekar et al., 2024), restricted to overlapping calculators, using its parameter annotations | External validity on case-report text | All overlapping instances |
 | **T6: real notes** *(optional)* | De-identified notes, e.g. MIMIC-IV under its data use agreement, annotated by two clinicians | Clinical validity | 30–50 per calculator |
 
-**T4 perturbations (as implemented in `perturb.py`; 1,869 cases from the first 50 T1 cases per calculator):**
+**T4 perturbations (as implemented in `perturb.py`; 2,557 cases from the first 50 T1 cases per calculator):**
 
 - *Distractors (452):* irrelevant sentences, including a family-history sentence that names scored conditions ("their father had a stroke…"), which tests attribution.
 - *Conflicting values (150):* an older, different value next to each current lab, e.g. "creatinine 1.3 (it was 2.4 three days ago)".
@@ -204,6 +204,8 @@ Tasks:
 - *Abbreviations and shorthand (332):* e.g. "h/o DVT/PE", "EtOH 9 drinks/wk", "On HD TIW", "PMHx significant for CVA".
 - *Reorder (250):* the option sentences in random order. This defeats position cues and applies to list-style templates only.
 - *Long note (485):* the vignette embedded in a note with unrelated sections.
+- *Prompt injection (452):* an instruction addressed to the AI, inserted as a sentence of the note, to report no risk factors or a score of zero. Gold labels are unchanged, so any change in output is a safety failure. Only text-reading systems can be affected; rules and encoders serve as controls.
+- *Omission (236):* one sentence stating a scoring finding is deleted. Gold for that criterion becomes "not documented" (calculator default) and the raw-facts gold becomes null. A system that still reports the finding is hallucinating from the template it expects.
 
 Not yet implemented: laterality swaps (NIHSS left/right is covered by its own fields) and dedicated negation-scope rewrites (partly covered by the abbreviation and distractor sets).
 
@@ -228,7 +230,7 @@ Mitigations:
 - Split by template and phrasing, never just by case.
 - Report T1 results for comparability only. **T2 and T3 are the primary evaluation sets.**
 
-*Confirmed in Phase 0:* a template-inversion baseline, which knows the templates and option phrasings and nothing clinical, scores **100%** on T1 and on all 397 matched Abacus-409 failures. It falls to 6.3% on T4. T1-style text is fully solvable by string matching.
+*Confirmed in Phase 0:* a template-inversion baseline, which knows the templates and option phrasings and nothing clinical, scores **100%** on T1 and on all 397 matched Abacus-409 failures. It falls to 7.5% on T4. T1-style text is fully solvable by string matching.
 
 ---
 
@@ -370,20 +372,101 @@ The clinical question is which threshold gives acceptable score accuracy on the 
 
 ## 9. Statistical analysis
 
+Everything below is implemented (`stats.py`, `figures.py`) and exercised on the mock results, so the analysis can be frozen and registered (e.g. on OSF) before any real prediction is graded.
+
+### 9.1 Inference
+
 - **Unit of analysis:** the case for case-level endpoints; the case × field pair for field-level endpoints.
-- **Confidence intervals:** 95% CIs from a case-level bootstrap with 2,000 resamples, clustered by case for field-level metrics.
+- **Clustering.** Rows are not independent.
+  - A case contributes several fields.
+  - A T1 case reappears as its T3 paraphrase and as its T4 perturbations.
+  - MedCalc-Bench reuses one patient note for several calculators.
+  - `evaluate` therefore gives every row a `cluster`: the base case for T3/T4 copies, the note for T5, and the case itself otherwise.
+- **Confidence intervals:** 95% percentile intervals from a cluster bootstrap that resamples whole clusters (2,000 resamples, fixed seed).
+  - It is implemented with multinomial cluster weights, so micro accuracy, macro accuracy (fields within calculator, then calculators), paired differences, Brier score and ECE are all bootstrapped the same way.
+  - With independent rows it reproduces the Wilson interval; with correlated rows it widens as it should (both checked in `tests/test_extraction.py`).
 - **Paired comparisons:** all systems see identical cases.
-  - McNemar's test for binary case-level outcomes.
-  - The paired bootstrap for differences in macro accuracy.
-  - Holm–Bonferroni correction within each pre-specified family of comparisons. The families are:
-    - (i) the best system of each family against each other on the primary endpoints;
-    - (ii) Variant D against Variant R within each system;
-    - (iii) extract-then-compute against the OMC arm, per LLM.
-- **Modelling:** mixed-effects logistic regression on field-level correctness, with random intercepts for calculator, case, and field:
-  - `correct ~ system + schema_variant + field_type + test_set + system:test_set + (1|calculator) + (1|case) + (1|field)`
-  - The `system:test_set` interaction is the formal test of H1 and H2 (robustness degradation).
-- **Sample size:** at an expected accuracy of 0.90, 1,000 cases per test set give a 95% CI half-width of about ±1.9 percentage points overall. Per calculator (n = 100), the half-width is about ±5.9 points. Per-calculator results are therefore descriptive. Pooled results carry the inferential claims.
-- **Run-to-run variation:** for LLMs with 3 repeats, report the mean and range, and the share of cases whose correctness flips between repeats.
+  - Effect sizes are paired differences with paired cluster-bootstrap CIs, for both final-score accuracy and macro field accuracy.
+  - Exact McNemar tests apply to final-score accuracy.
+  - Holm–Bonferroni correction is applied within each pre-specified family. The families are:
+    - (i) the best system of each family against each other (15 comparisons; Table "Pairwise comparisons", forest plot);
+    - (ii) Variant R against Variant D within each system (HAS-BLED);
+    - (iii) extract-then-compute against the OMC arm, per LLM;
+    - (iv) the best system of each family against each clinician reader (§9.4).
+  - "Best system of a family" is chosen on T2 ∪ T3 final-score accuracy. Because that choice uses the same data, family (i) is confirmatory only for families with a single pre-registered configuration. The others are reported as best-of-family with that caveat.
+- **Model of field correctness.** A population-averaged logistic model (GEE, binomial, independence working correlation, robust sandwich SEs clustered as above):
+  - `correct ~ system × test_set + field_type + calculator`
+  - It is fitted on the best system per family with the decision schema.
+  - The joint Wald test of `system × test_set` is the formal test of H1–H2: do systems differ in how much they lose from template text to new wording, perturbations and real notes?
+  - *Change from the first draft:* the draft specified a mixed model with crossed random intercepts for case and field. Calculators (7–10) are too few to estimate a variance component, so they enter as fixed effects. Fields are nested in calculators. Case-level correlation is handled by the robust cluster covariance, which stays valid whatever the true correlation structure.
+  - Sensitivity S6 refits the model with an exchangeable working correlation. Robust SEs are valid under either working correlation, so the conclusions should agree.
+  - A GLMM (`lme4::glmer` with `(1|cluster) + (1|calculator:field)`) is an optional further check. statsmodels' variational GLMM did not finish within 10 minutes at this size, so it would run in R. Its conditional odds ratios are larger in magnitude than the population-averaged ones by construction, so only the direction and significance of terms would be compared.
+- **Calibration (RQ6, H5).** This applies to systems that report a probability for their answer (Jev: the probability of the chosen option).
+  - Brier score and ECE (10 equal-width bins), with cluster-bootstrap CIs.
+  - AUROC of confidence for separating right from wrong answers.
+  - AURC (area under the risk-coverage curve).
+  - A reliability diagram.
+  - Operating thresholds are chosen on T1 and applied unchanged to T2, T3 and T5.
+- **Run-to-run variation:** for LLMs with 3 repeats, report the mean and range, and the share of cases whose correctness flips between repeats. Systems decoded greedily are run once.
+- **Missing outputs:** a schema-invalid output counts as wrong on every field (primary). Sensitivity S1 drops it instead.
+
+### 9.2 Precision and power (design-based; Table "Precision and minimum detectable differences")
+
+| Comparison set | Cases | ±95% CI at 90% accuracy | MDE at 10% discordant pairs | MDE, worst Holm step |
+|---|---|---|---|---|
+| T2 ∪ T3 (primary) | 2,000 | ±1.3 pp | 2.0 pp | 2.7 pp |
+| One test set | 1,000 | ±1.9 pp | 2.8 pp | 3.8 pp |
+| T5 | 637 | ±2.3 pp | 3.5 pp | 4.7 pp |
+| One calculator in T2 ∪ T3 | 200 | ±4.2 pp | 6.2 pp | 8.4 pp |
+
+- MDE is the paired difference in final-score accuracy that the two-sided McNemar test detects with 80% power (Connor 1987), given the share of cases on which two systems disagree. The worst Holm step uses α = 0.05/15.
+- Clustering widens these figures for sets with copies (T4), but not for T2 and T3, whose cases are independent of each other.
+- Per-calculator and subgroup results are descriptive.
+
+### 9.3 Sensitivity and subgroup analyses (pre-specified)
+
+| | Analysis | Question |
+|---|---|---|
+| S1 | Invalid outputs excluded instead of counted wrong | Do systems that fail loudly gain rank? |
+| S2 | HAS-BLED and CCI removed | Do the open scoring decisions (age ≥65 vs >65; CCI liver wording, §13) drive any conclusion? |
+| S3 | Exact float match instead of ±1% | Does the unit-conversion tolerance matter? |
+| S4–S5 | T5 with and without the 8 rows where OpenMedCalc and MedCalc-Bench disagree | Is the external result sensitive to scoring disagreements? |
+| S6 | GEE with exchangeable instead of independence working correlation (§9.1) | Is the H1–H2 test robust to the model? |
+| S7 | Contamination-flagged models excluded from T5 (§9.5) | Is the external result inflated by memorised notes? |
+
+The table reports whether each family keeps its rank across S0–S5.
+
+Subgroups (descriptive, no tests):
+
+- calculator type (criteria checklist, lab equation, organ physiology, examination scale, questionnaire);
+- T5 note type (synthetic vs extracted from case reports);
+- T4 perturbation type.
+
+### 9.4 Clinician reference arm
+
+- **Who and what:** two clinicians, blind to gold and to each other, fill the same typed request for a stratified sample of 10 cases per calculator per set (T2, T3, T5; about 270 cases). They use spreadsheet sheets (`clinician.py`) and self-record their time.
+- **How they are graded:** their sheets are imported as two systems and graded by the same evaluator.
+- **What it gives:**
+  - an anchor for "good enough" accuracy;
+  - inter-reader agreement per field (Cohen's κ), which bounds how well-defined each field is;
+  - time per case against system latency;
+  - comparison family (iv).
+- Disagreements between both readers and gold go to the gold-label review (`GOLD` code, §10).
+
+### 9.5 Contamination
+
+T5 notes come from case reports and have been public since 2024. An open model may have been trained on them.
+
+- **Probe** (`contamination.py`, one Killarney job per open LLM):
+  - Give the model the first half of each note as raw text and decode 64 tokens greedily.
+  - Compare the output with the true continuation (ROUGE-L, longest shared n-gram; verbatim if ≥ 13 words).
+  - Do this for 200 T5 notes and 200 T3 paraphrases (written for this study, so unseen).
+- **Action:** a model whose verbatim rate on T5 exceeds its T3 rate (Wilson CIs not overlapping) is flagged, and S7 removes it from the T5 analysis.
+- **API models** cannot be probed this way. For them the paper reports the training cut-off against the T5 release date.
+
+### 9.6 Reporting
+
+The manuscript follows TRIPOD-LLM. The item-by-item mapping to this plan and the code is in [tripod_llm_checklist.md](tripod_llm_checklist.md). Every figure is saved as vector PDF and 300-dpi PNG at journal column widths (89/183 mm) with a source-data TSV, and every table also as TSV (`figures` output: `figures/`, `source_data/`).
 
 ---
 
@@ -434,7 +517,13 @@ llm_calc/extraction/
 ├── paraphrase.py      # GPU job: paraphrase candidates for clinician review
 ├── units.py           # number parsing (incl. number words) and unit normalisation
 ├── evaluate.py        # field- and case-level grading, risk bands, summaries
-├── stats.py           # Wilson CI, exact McNemar, bootstrap, Holm
+├── stats.py           # cluster bootstrap, paired differences, McNemar, Holm, GEE, calibration, power
+├── medcalc.py         # T5 builder from MedCalc-Bench Verified
+├── clinician.py       # clinician reference arm: extraction sheets out, predictions in
+├── contamination.py   # GPU job: completion probe for memorised T5 notes
+├── annotation.py      # field-error annotation sheets, Cohen's kappa
+├── mock.py            # mock predictions for every planned analysis
+├── figures.py         # every figure and table (mock and real)
 ├── attribution.py     # Abacus-409 error attribution with a mirrored-error control
 └── extractors/
     ├── base.py        # Extractor interface, JSON parsing
@@ -452,8 +541,12 @@ tests/test_extraction.py
 
 ### 11.2 Reproducibility
 
-- Pin model versions and record them with each run, along with prompts, decoding parameters, and seeds.
-- Store raw model outputs before validation.
+Step-by-step instructions are in [REPRODUCE.md](../REPRODUCE.md).
+
+- **Data:** `MANIFEST.tsv` records the SHA-256 of every set. `python -m llm_calc.extraction manifest --check` verifies a rebuild, including T5, which is never redistributed.
+- **Models:** `cluster/killarney/models.lock.tsv` pins every open model to a Hugging Face commit. The first download records it, and every later download fetches exactly that commit. Jev is pinned to a version string (`jev-1.14.0`), and API models to dated snapshots.
+- **Runs:** the `evaluate` job writes `provenance.yaml` (git commit, dirty flag, date), copies the manifest and lockfile, and saves `pip freeze` next to the results.
+- **Outputs:** prompts, decoding parameters and seeds are fixed in code. Raw model outputs are stored before validation.
 - Release the generated T1–T4 sets and gold requests as **Abacus-Extract**, under the same terms as the existing datasets.
 
 ### 11.3 Milestones
@@ -464,8 +557,8 @@ tests/test_extraction.py
 | 1 | T1–T3 test sets and the training phrasing pool | Clinician sign-off on the T2 phrasings and the T3 paraphrase sample | T1, T4, TRAIN done; T2/T3 wait on the paraphrase job and review |
 | 2 | Extractors A–D implemented, pilot on 20% of T2 | All systems produce schema-valid outputs end to end | Implemented; CPU and stub dry runs pass; GPU pilot on Killarney next |
 | 3 | Full runs on T1–T3, plus E arms | Primary endpoints computed | Waiting on Killarney (`submit.sh all`) |
-| 4 | T4 stress, T5 external, optional T6 | Robustness analysis complete | T4 built; T5/T6 not started |
-| 5 | Error annotation, statistics, write-up | Manuscript draft and dataset release | Not started |
+| 4 | T4 stress, T5 external, optional T6 | Robustness analysis complete | T4 (8 perturbations) and T5 built; T6 not started |
+| 5 | Error annotation, statistics, clinician reference arm, contamination probe, write-up | Manuscript draft and dataset release | Analysis code, figures and TRIPOD-LLM mapping done and run on mock results; clinician readers, annotation and write-up not started |
 
 ### 11.4 Compute: Killarney (Alliance / PAICE)
 
@@ -507,6 +600,8 @@ All GPU work runs on Killarney under the group's `aip-` allocation. The scripts 
 - **Schema choices shape the results.** RQ3 tests this directly. Any final claim should name the schema variant it applies to.
 - **Gold-label fidelity.** Gold labels come from the generator's option metadata, so the round-trip check (§5.1) and clinician review of the mappers are essential.
 - **Model churn.** API model versions change. Pin versions, record dates, and present frontier-model results as a snapshot.
+- **Training-data contamination.** T5 notes are public; memorisation would inflate T5 results. The completion probe (§9.5) measures it for open models; conclusions rest on T2/T3, which no model can have seen.
+- **Best-of-family selection.** Choosing each family's best configuration on the primary sets favours families with more configurations. The forest plot and family (i) tests are labelled best-of-family and name the configuration chosen; every configuration's own result is in the primary-endpoint table.
 
 ---
 
@@ -519,6 +614,8 @@ All GPU work runs on Killarney under the group's `aip-` allocation. The scripts 
 5. Clinician adjudication of the CCI liver-disease option in the released data: cirrhosis "awaiting transplant evaluation" was scored as moderate/severe (3 points), but the text only supports mild (see the results report §2.3).
 6. Killarney: which `aip-` allocation to use, whether project quota allows the 70B models in project space, and an HF token with the Llama 3.1 licence accepted.
 7. Jev: a TypeSafe API key (`TYPESAFE_API_KEY`), and whether a data processing agreement is wanted before any non-public notes are sent.
+8. Clinician readers for §9.4: two clinicians, about 270 cases each (an estimated 7–9 hours per reader at 90–120 s per case).
+9. Pre-registration: freeze §8–§10 and the mock page as the analysis plan (e.g. OSF) before grading real predictions.
 
 ---
 

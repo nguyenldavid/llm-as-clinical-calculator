@@ -1,45 +1,61 @@
 system	variant	test_set	perturbation	calculator	n_cases	valid_rate	macro_field_acc	micro_field_acc	micro_field_acc_exact	all_fields_correct	score_acc	band_acc	score_mae	median_latency_s
-majority	D	T4	abbreviations	ALL	332	1.0	0.4881	0.5263	0.5203	0.003	0.0422	0.4217	8.7018	
-majority	D	T4	conflicting	ALL	150	1.0	0.4356	0.4879	0.4726	0.0	0.06	0.5733	14.0867	
-majority	D	T4	distractors	ALL	452	1.0	0.4682	0.5364	0.5317	0.0022	0.0509	0.4757	11.2212	
-majority	D	T4	long_note	ALL	485	1.0	0.4678	0.5323	0.5279	0.0021	0.0557	0.468	10.7113	
-majority	D	T4	reorder	ALL	250	1.0	0.469	0.4662	0.458	0.004	0.048	0.464	9.944	
-majority	D	T4	units	ALL	200	1.0	0.4456	0.4855	0.4732	0.0	0.05	0.435	11.285	
-majority	R	T4	abbreviations	ALL	50	1.0	0.5709	0.5709	0.5709	0.0	0.02	0.02	2.88	
-majority	R	T4	distractors	ALL	50	1.0	0.5709	0.5709	0.5709	0.0	0.02	0.02	2.88	
-majority	R	T4	long_note	ALL	50	1.0	0.5709	0.5709	0.5709	0.0	0.02	0.02	2.88	
-majority	R	T4	reorder	ALL	50	1.0	0.5709	0.5709	0.5709	0.0	0.02	0.02	2.88	
-majority	R	T4	units	ALL	50	1.0	0.5709	0.5709	0.5709	0.0	0.02	0.02	2.88	
+majority	D	T4	abbreviations	ALL	332	1.0	0.4821	0.5214	0.5153	0.0	0.0723	0.5151	8.6114	
+majority	D	T4	conflicting	ALL	150	1.0	0.4342	0.48	0.4647	0.0	0.08	0.54	14.5667	
+majority	D	T4	distractors	ALL	452	1.0	0.458	0.5284	0.5238	0.0	0.0819	0.542	8.8053	
+majority	D	T4	injection	ALL	452	1.0	0.458	0.5284	0.5238	0.0	0.0819	0.542	8.8053	
+majority	D	T4	long_note	ALL	485	1.0	0.4589	0.5251	0.5207	0.0	0.0825	0.5196	8.5588	
+majority	D	T4	omission	ALL	236	1.0	0.4872	0.4977	0.4882	0.0	0.1186	0.7119	12.2288	
+majority	D	T4	reorder	ALL	250	1.0	0.4566	0.4563	0.4482	0.0	0.088	0.596	8.904	
+majority	D	T4	units	ALL	200	1.0	0.4384	0.4745	0.4621	0.0	0.065	0.41	11.645	
+majority	R	T4	abbreviations	ALL	50	1.0	0.5509	0.5509	0.5509	0.0	0.02	0.02	2.88	
+majority	R	T4	distractors	ALL	50	1.0	0.5509	0.5509	0.5509	0.0	0.02	0.02	2.88	
+majority	R	T4	injection	ALL	50	1.0	0.5509	0.5509	0.5509	0.0	0.02	0.02	2.88	
+majority	R	T4	long_note	ALL	50	1.0	0.5509	0.5509	0.5509	0.0	0.02	0.02	2.88	
+majority	R	T4	omission	ALL	50	1.0	0.5182	0.5182	0.5182	0.0	0.18	0.18	1.96	
+majority	R	T4	reorder	ALL	50	1.0	0.5509	0.5509	0.5509	0.0	0.02	0.02	2.88	
+majority	R	T4	units	ALL	50	1.0	0.5509	0.5509	0.5509	0.0	0.02	0.02	2.88	
 oracle	D	T4	abbreviations	ALL	332	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	D	T4	conflicting	ALL	150	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	D	T4	distractors	ALL	452	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
+oracle	D	T4	injection	ALL	452	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	D	T4	long_note	ALL	485	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
+oracle	D	T4	omission	ALL	236	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	D	T4	reorder	ALL	250	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	D	T4	units	ALL	200	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	R	T4	abbreviations	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	R	T4	distractors	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
+oracle	R	T4	injection	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	R	T4	long_note	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
+oracle	R	T4	omission	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	R	T4	reorder	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
 oracle	R	T4	units	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	
-rules	D	T4	abbreviations	ALL	332	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0011
-rules	D	T4	conflicting	ALL	150	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0008
-rules	D	T4	distractors	ALL	452	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0011
-rules	D	T4	long_note	ALL	485	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0012
-rules	D	T4	reorder	ALL	250	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0012
-rules	D	T4	units	ALL	200	1.0	1.0	1.0	0.9298	1.0	1.0	1.0	0.0	0.0008
-rules	R	T4	abbreviations	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0008
-rules	R	T4	distractors	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0011
-rules	R	T4	long_note	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0013
-rules	R	T4	reorder	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0009
-rules	R	T4	units	ALL	50	1.0	1.0	1.0	0.9564	1.0	1.0	1.0	0.0	0.0009
-template_inversion	D	T4	abbreviations	ALL	332	1.0	0.4746	0.5104	0.5044	0.003	0.0723	0.4398	9.1958	0.0
-template_inversion	D	T4	conflicting	ALL	150	1.0	0.3915	0.4426	0.4274	0.0	0.02	0.5733	17.3267	0.0
-template_inversion	D	T4	distractors	ALL	452	1.0	0.4394	0.5132	0.5086	0.0022	0.0664	0.4624	11.9248	0.0
-template_inversion	D	T4	long_note	ALL	485	1.0	0.4409	0.5055	0.5011	0.0021	0.0619	0.4557	11.8062	0.0
-template_inversion	D	T4	reorder	ALL	250	1.0	0.4625	0.4625	0.4544	0.004	0.072	0.496	10.512	0.0
-template_inversion	D	T4	units	ALL	200	1.0	0.4131	0.4494	0.437	0.005	0.06	0.475	13.485	0.0
-template_inversion	R	T4	abbreviations	ALL	50	1.0	0.5727	0.5727	0.5727	0.02	0.18	0.18	1.96	0.0
-template_inversion	R	T4	distractors	ALL	50	1.0	0.5727	0.5727	0.5727	0.02	0.18	0.18	1.96	0.0
-template_inversion	R	T4	long_note	ALL	50	1.0	0.5727	0.5727	0.5727	0.02	0.18	0.18	1.96	0.0
-template_inversion	R	T4	reorder	ALL	50	1.0	0.5727	0.5727	0.5727	0.02	0.18	0.18	1.96	0.0
-template_inversion	R	T4	units	ALL	50	1.0	0.5727	0.5727	0.5727	0.02	0.18	0.18	1.96	0.0
+rules	D	T4	abbreviations	ALL	332	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0017
+rules	D	T4	conflicting	ALL	150	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0012
+rules	D	T4	distractors	ALL	452	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0018
+rules	D	T4	injection	ALL	452	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0017
+rules	D	T4	long_note	ALL	485	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0019
+rules	D	T4	omission	ALL	236	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0018
+rules	D	T4	reorder	ALL	250	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0018
+rules	D	T4	units	ALL	200	1.0	1.0	1.0	0.9298	1.0	1.0	1.0	0.0	0.0013
+rules	R	T4	abbreviations	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0012
+rules	R	T4	distractors	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0016
+rules	R	T4	injection	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0015
+rules	R	T4	long_note	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0019
+rules	R	T4	omission	ALL	50	1.0	0.9927	0.9927	0.9927	0.92	1.0	1.0	0.0	0.0012
+rules	R	T4	reorder	ALL	50	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.0	0.0013
+rules	R	T4	units	ALL	50	1.0	1.0	1.0	0.9564	1.0	1.0	1.0	0.0	0.0014
+template_inversion	D	T4	abbreviations	ALL	332	1.0	0.4651	0.5008	0.4948	0.003	0.0904	0.5602	9.2259	0.0
+template_inversion	D	T4	conflicting	ALL	150	1.0	0.4117	0.4574	0.4421	0.0	0.0333	0.5733	17.1667	0.0
+template_inversion	D	T4	distractors	ALL	452	1.0	0.4345	0.5033	0.4987	0.0022	0.0752	0.5929	9.3496	0.0
+template_inversion	D	T4	injection	ALL	452	1.0	0.4345	0.5033	0.4987	0.0022	0.0752	0.5929	9.3496	0.0
+template_inversion	D	T4	long_note	ALL	485	1.0	0.4356	0.4983	0.4939	0.0021	0.0701	0.5773	9.2577	0.0
+template_inversion	D	T4	omission	ALL	236	1.0	0.4707	0.4764	0.4669	0.0	0.1271	0.7119	14.2797	0.0
+template_inversion	D	T4	reorder	ALL	250	1.0	0.4492	0.4521	0.4439	0.004	0.08	0.596	10.048	0.0
+template_inversion	D	T4	units	ALL	200	1.0	0.421	0.4557	0.4434	0.0	0.03	0.435	13.595	0.0
+template_inversion	R	T4	abbreviations	ALL	50	1.0	0.5491	0.5491	0.5491	0.0	0.02	0.02	2.88	0.0
+template_inversion	R	T4	distractors	ALL	50	1.0	0.5491	0.5491	0.5491	0.0	0.02	0.02	2.88	0.0
+template_inversion	R	T4	injection	ALL	50	1.0	0.5491	0.5491	0.5491	0.0	0.02	0.02	2.88	0.0
+template_inversion	R	T4	long_note	ALL	50	1.0	0.5491	0.5491	0.5491	0.0	0.02	0.02	2.88	0.0
+template_inversion	R	T4	omission	ALL	50	1.0	0.5164	0.5164	0.5164	0.0	0.18	0.18	1.96	0.0
+template_inversion	R	T4	reorder	ALL	50	1.0	0.5491	0.5491	0.5491	0.0	0.02	0.02	2.88	0.0
+template_inversion	R	T4	units	ALL	50	1.0	0.5491	0.5491	0.5491	0.0	0.02	0.02	2.88	0.0

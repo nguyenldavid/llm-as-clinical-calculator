@@ -1,0 +1,16 @@
+comparison	first	second	n	only first right	only second right	d_score	d_score_lo	d_score_hi	p_mcnemar	d_macro	d_macro_lo	d_macro_hi	p_holm
+Rules vs Encoder	rules	encoder-ModernBERT-base	800	100	131	-0.03875	-0.075	-0.0025	0.0481631	-0.0727561	-0.0970494	-0.048152	0.144489
+Rules vs NuExtract	rules	nuextract:NuExtract3:3shot	800	68	310	-0.3025	-0.3475	-0.259969	5.06505e-38	-0.241759	-0.264414	-0.219204	5.06505e-37
+Rules vs Open LLM	rules	vllm:Qwen2.5-72B-Instruct	800	53	362	-0.38625	-0.4275	-0.34625	1.14931e-57	-0.254798	-0.27691	-0.231903	1.72397e-56
+Rules vs API LLM	rules	api:gpt-4o	800	51	349	-0.3725	-0.41375	-0.33375	1.05928e-55	-0.263669	-0.284837	-0.242918	1.48299e-54
+Rules vs System One	rules	jev:jev-1.14.0	800	63	301	-0.2975	-0.34	-0.255	2.52929e-38	-0.234948	-0.257437	-0.21267	2.78221e-37
+Encoder vs NuExtract	encoder-ModernBERT-base	nuextract:NuExtract3:3shot	800	71	282	-0.26375	-0.3075	-0.22125	6.92533e-31	-0.169003	-0.191672	-0.146041	6.2328e-30
+Encoder vs Open LLM	encoder-ModernBERT-base	vllm:Qwen2.5-72B-Instruct	800	58	336	-0.3475	-0.38875	-0.305	1.06338e-48	-0.182042	-0.204208	-0.158797	1.3824e-47
+Encoder vs API LLM	encoder-ModernBERT-base	api:gpt-4o	800	63	330	-0.33375	-0.375	-0.29125	9.00105e-45	-0.190913	-0.212024	-0.170314	1.08013e-43
+Encoder vs System One	encoder-ModernBERT-base	jev:jev-1.14.0	800	69	276	-0.25875	-0.3	-0.2175	1.8825e-30	-0.162192	-0.184536	-0.13956	1.506e-29
+NuExtract vs Open LLM	nuextract:NuExtract3:3shot	vllm:Qwen2.5-72B-Instruct	800	142	209	-0.08375	-0.1275	-0.0374688	0.000411672	-0.0130392	-0.0313388	0.00564124	0.00247003
+NuExtract vs API LLM	nuextract:NuExtract3:3shot	api:gpt-4o	800	153	209	-0.07	-0.115031	-0.02125	0.00378348	-0.0219104	-0.0392179	-0.00605961	0.0151339
+NuExtract vs System One	nuextract:NuExtract3:3shot	jev:jev-1.14.0	800	166	162	0.005	-0.03875	0.05	0.868467	0.00681091	-0.0119162	0.0253403	1
+Open LLM vs API LLM	vllm:Qwen2.5-72B-Instruct	api:gpt-4o	800	162	151	0.01375	-0.0287812	0.05625	0.571985	-0.00887116	-0.0256795	0.00689374	1
+Open LLM vs System One	vllm:Qwen2.5-72B-Instruct	jev:jev-1.14.0	800	207	136	0.08875	0.0449688	0.1325	0.00014942	0.0198502	0.00207197	0.0360787	0.00104594
+API LLM vs System One	api:gpt-4o	jev:jev-1.14.0	800	202	142	0.075	0.03	0.12	0.00143177	0.0287213	0.0113055	0.0458005	0.00715884

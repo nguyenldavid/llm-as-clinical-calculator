@@ -21,7 +21,8 @@ The CPU parts run on the cluster too: the Phase 0 check, the training pool and t
 | `download_models.sh` | Login node only. Downloads every model in `models.tsv` into `$HF_HOME`. |
 | `models.tsv` | What runs: system kind, Hub id, GPU type and count, time limit, extra `predict` arguments. |
 | `submit.sh` | Submits jobs and chains them with dependencies. |
-| `jobs/*.sbatch` | Job bodies (`prepare`, `encoder`, `nuextract`, `vllm`, `paraphrase`, `evaluate`). |
+| `jobs/*.sbatch` | Job bodies (`prepare`, `encoder`, `nuextract`, `vllm`, `paraphrase`, `contamination`, `evaluate`). |
+| `models.lock.tsv` | Written by `download_models.sh`: the Hub commit each model is pinned to. Commit it with the results. |
 
 ## Cluster rules these scripts follow
 

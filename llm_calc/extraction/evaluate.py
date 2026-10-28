@@ -81,6 +81,17 @@ def predicted_score(calculator: str, variant: str, request: Dict) -> Optional[in
         return None
 
 
+def cluster_of(rec: Dict) -> str:
+    """Resampling cluster: copies of one case (T3 paraphrase, T4 perturbation) share their base case, and
+    MedCalc-Bench rows share their patient note."""
+    meta = rec.get("meta") or {}
+    if meta.get("base_id"):
+        return meta["base_id"]
+    if meta.get("note_id"):
+        return f"note:{meta['note_id']}"
+    return rec["id"]
+
+
 def grade(records: Iterable[Dict], predictions: Iterable[Dict]) -> Tuple[List[Dict], List[Dict]]:
     """Field-level and case-level result rows."""
     by_id = {p["id"]: p for p in predictions}
@@ -94,7 +105,12 @@ def grade(records: Iterable[Dict], predictions: Iterable[Dict]) -> Tuple[List[Di
         gold = rec["gold"][variant]
         output, invalid = validate(calc, variant, pred.get("output"))
         specs = field_specs(calc, variant)
-        confidence = pred.get("confidence") or {}  # per-field confidence, when the system reports one
+        # per-field confidence (for thresholds) and probability of the answer given (for calibration),
+        # when the system reports them
+        confidence = pred.get("confidence") or {}
+        probability = pred.get("probability") or {}
+        cluster = cluster_of(rec)
+        meta = rec.get("meta") or {}
         n_correct = 0
         for f in specs:
             g, p = gold.get(f.name), (output or {}).get(f.name)
@@ -103,16 +119,18 @@ def grade(records: Iterable[Dict], predictions: Iterable[Dict]) -> Tuple[List[Di
             correct = output is not None and _equal(f.kind, g, p, tolerant=True)
             n_correct += correct
             field_rows.append({
-                "id": rec["id"], "test_set": rec["test_set"], "calculator": calc,
+                "id": rec["id"], "test_set": rec["test_set"], "calculator": calc, "cluster": cluster,
                 "system": pred["system"], "variant": variant, "field": f.name, "kind": f.kind,
                 "gold": g, "pred": p, "correct": correct, "correct_exact": exact,
                 "source": rec["field_sources"][variant].get(f.name),
-                "confidence": confidence.get(f.name),
+                "confidence": confidence.get(f.name), "probability": probability.get(f.name),
             })
         score = predicted_score(calc, variant, output) if output is not None else None
         gold_score = rec["gold_score"]
         case_rows.append({
             "id": rec["id"], "test_set": rec["test_set"], "calculator": calc,
+            # perturbed or paraphrased copies of one case are correlated: resample them together
+            "cluster": cluster,
             "system": pred["system"], "variant": variant,
             "valid": output is not None, "invalid_reason": invalid or pred.get("error"),
             "n_fields": len(specs), "n_correct": n_correct, "all_fields_correct": n_correct == len(specs),
@@ -121,6 +139,8 @@ def grade(records: Iterable[Dict], predictions: Iterable[Dict]) -> Tuple[List[Di
             "abs_error": None if score is None else abs(score - gold_score),
             "band_correct": score is not None and risk_band(calc, score) == risk_band(calc, gold_score),
             "latency_s": pred.get("latency_s"),
+            # subgroup and sensitivity attributes (T5 only)
+            "note_type": meta.get("note_type"), "external_agrees": meta.get("score_agrees"),
         })
     return field_rows, case_rows
 

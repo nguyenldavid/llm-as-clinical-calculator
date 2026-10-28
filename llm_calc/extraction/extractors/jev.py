@@ -22,8 +22,15 @@ Field mapping (one request per case; every field is a question, "fan-out"):
   SOFA map                      also asks for systolic and diastolic pressure, and
                                 computes MAP in code when no MAP is stated
 
-Each field's confidence is kept in the prediction (``confidence``) for the
-calibration and risk-coverage analyses.
+Two per-field numbers are kept in the prediction:
+
+* ``confidence``: Jev's own statistic of how concentrated the answer
+  distribution is (1 = all mass on one option, 0 = uniform; for a Noul,
+  |2p - 1|). This is what TypeSafe recommends thresholding on, so the
+  risk-coverage curves and operating points use it.
+* ``probability``: the probability Jev gave the answer it chose (max(p, 1 - p)
+  for a Noul). This is the system's stated chance of being right, so the
+  calibration metrics (Brier, ECE, reliability diagram) use it.
 
 API: POST https://api.typesafe.ai/v1/systemone with ``Authorization: Bearer
 $TYPESAFE_API_KEY``. Only synthetic sets (T1-T4, A409) and T5 go to the API;
@@ -173,6 +180,17 @@ def build(calculator: str, variant: str, text: str) -> Tuple[Dict, Dict[str, Dec
     return questions, decoders
 
 
+def chosen_probability(answer: Optional[Dict]) -> Optional[float]:
+    """Probability of the option or level Jev answered with."""
+    if not answer:
+        return None
+    if answer.get("noul") is not None:
+        p = float(answer["noul"])
+        return max(p, 1 - p)
+    probs = answer.get("probabilities") or {}
+    return max(probs.values()) if probs else None
+
+
 def http_transport(api_key: str, timeout_s: float = 60, retries: int = 5) -> Callable[[Dict], Dict]:
     def send(body: Dict) -> Dict:
         data = json.dumps(body).encode()
@@ -226,6 +244,7 @@ class JevExtractor(Extractor):
         pred = prediction(record, self.name, variant, output, raw=json.dumps(answers)[:20000],
                           latency_s=time.perf_counter() - start)
         pred["confidence"] = confidence
+        pred["probability"] = {field: chosen_probability(answers.get(field)) for field in decoders}
         pred["model_version"] = response.get("model")
         pred["usage"] = response.get("usage")
         return pred

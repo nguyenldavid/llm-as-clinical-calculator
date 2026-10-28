@@ -1,0 +1,7 @@
+family	system	n	system accuracy	clinicians (mean of readers)	Δ system − clinicians (95% CI)	p vs A (McNemar)	p vs B (McNemar)
+Rules	rules	270	0.151852	0.62037	-0.469 (-0.525 to -0.409)	<0.001	<0.001
+Encoder	ModernBERT-base	270	0.192593	0.62037	-0.428 (-0.485 to -0.369)	<0.001	<0.001
+NuExtract	NuExtract3 (3-shot)	270	0.459259	0.62037	-0.161 (-0.236 to -0.088)	<0.001	0.009
+Open LLM	Qwen2.5-72B	270	0.577778	0.62037	-0.043 (-0.110 to 0.021)	0.304	0.714
+API LLM	gpt-4o	270	0.533333	0.62037	-0.087 (-0.152 to -0.017)	0.017	0.304
+System One	Jev 1.14	270	0.433333	0.62037	-0.187 (-0.251 to -0.121)	<0.001	<0.001

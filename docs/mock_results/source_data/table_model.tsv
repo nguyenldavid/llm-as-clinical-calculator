@@ -1,0 +1,34 @@
+term	odds ratio (95% CI)	p
+Intercept	80.34 (41.27 to 156.39)	<0.001
+system: gpt-4o	1.22 (0.57 to 2.62)	0.603
+system: ModernBERT-base	0.91 (0.36 to 2.29)	0.835
+system: Jev 1.14	0.49 (0.23 to 1.05)	0.067
+system: NuExtract3 (3-shot)	0.42 (0.18 to 0.99)	0.047
+system: Qwen2.5-72B	0.55 (0.24 to 1.27)	0.160
+set: T2	0.03 (0.02 to 0.06)	<0.001
+set: T3	0.03 (0.01 to 0.05)	<0.001
+set: T4	0.88 (0.42 to 1.86)	0.745
+set: T5	0.02 (0.01 to 0.04)	<0.001
+field type: enum	0.59 (0.56 to 0.62)	<0.001
+field type: float	1.12 (1.07 to 1.16)	<0.001
+field type: int	1.04 (1.01 to 1.07)	0.017
+system: gpt-4o × set: T2	5.22 (2.26 to 12.02)	<0.001
+system: ModernBERT-base × set: T2	1.64 (0.64 to 4.24)	0.307
+system: Jev 1.14 × set: T2	9.13 (4.06 to 20.50)	<0.001
+system: NuExtract3 (3-shot) × set: T2	11.15 (4.59 to 27.08)	<0.001
+system: Qwen2.5-72B × set: T2	10.91 (4.49 to 26.47)	<0.001
+system: gpt-4o × set: T3	5.27 (2.35 to 11.78)	<0.001
+system: ModernBERT-base × set: T3	1.56 (0.61 to 4.00)	0.356
+system: Jev 1.14 × set: T3	10.78 (4.80 to 24.21)	<0.001
+system: NuExtract3 (3-shot) × set: T3	14.79 (6.08 to 35.98)	<0.001
+system: Qwen2.5-72B × set: T3	10.85 (4.52 to 26.01)	<0.001
+system: gpt-4o × set: T4	0.33 (0.14 to 0.79)	0.013
+system: ModernBERT-base × set: T4	1.13 (0.36 to 3.55)	0.829
+system: Jev 1.14 × set: T4	0.62 (0.26 to 1.47)	0.277
+system: NuExtract3 (3-shot) × set: T4	0.83 (0.32 to 2.19)	0.713
+system: Qwen2.5-72B × set: T4	0.92 (0.38 to 2.21)	0.845
+system: gpt-4o × set: T5	5.83 (2.62 to 12.97)	<0.001
+system: ModernBERT-base × set: T5	1.64 (0.64 to 4.21)	0.306
+system: Jev 1.14 × set: T5	8.70 (3.94 to 19.19)	<0.001
+system: NuExtract3 (3-shot) × set: T5	10.67 (4.47 to 25.46)	<0.001
+system: Qwen2.5-72B × set: T5	9.91 (4.15 to 23.67)	<0.001

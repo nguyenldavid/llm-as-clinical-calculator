@@ -1,0 +1,22 @@
+system	median s/case	p95 s/case	deployment	GPU-hours per 1k cases
+rules	0.002	0.00236719	on-prem CPU	
+ModernBERT-base	0.0100204	0.0118049	on-prem GPU	0.00278345
+gatortron-base	0.0100449	0.0117989	on-prem GPU	0.00279026
+BiomedBERT	0.0100418	0.0117927	on-prem GPU	0.00278938
+Bio_ClinicalBERT	0.00999901	0.0118026	on-prem GPU	0.0027775
+NuExtract3 (3-shot)	0.4	0.471887	on-prem GPU	0.111111
+NuExtract3 (constrained)	0.300671	0.353914	on-prem GPU	0.0835198
+NuExtract3	0.248666	0.294573	on-prem GPU	0.0690739
+NuExtract-2.0-8B (3-shot)	0.5	0.590546	on-prem GPU	0.138889
+NuExtract-2.0-8B	0.300496	0.354476	on-prem GPU	0.083471
+NuExtract-2.0-2B	0.15	0.177245	on-prem GPU	0.0416667
+Qwen2.5-72B	1.60218	1.88565	on-prem GPU	0.445049
+Llama-3.1-70B (3-shot)	1.99815	2.36168	on-prem GPU	0.555041
+Llama-3.1-70B	1.49746	1.77324	on-prem GPU	0.41596
+Qwen3-32B	0.80391	0.943921	on-prem GPU	0.223308
+Qwen3-8B	0.299887	0.353338	on-prem GPU	0.0833019
+Qwen2.5-7B	0.298656	0.353425	on-prem GPU	0.08296
+Llama-3.1-8B	0.300711	0.353565	on-prem GPU	0.0835309
+gpt-4o	2.49209	2.9474	external API	
+Jev 1.14	0.301437	0.353822	external API	
+Jev 1.13	0.298728	0.353623	external API	

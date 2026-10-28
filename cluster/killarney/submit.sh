@@ -6,6 +6,7 @@
 #   ./submit.sh nuextract [substr]      NuExtract rows
 #   ./submit.sh vllm [substr]           LLM rows
 #   ./submit.sh paraphrase [options|vignettes]
+#   ./submit.sh contamination [substr] completion probe for each open LLM (T5 vs T3)
 #   ./submit.sh evaluate                grade everything under $RUN_ROOT/preds
 #   ./submit.sh all                     prepare, then every GPU row, then evaluate
 #
@@ -66,6 +67,19 @@ submit_paraphrase() {
     done < "$HERE/models.tsv"
 }
 
+submit_contamination() {  # one job per distinct open LLM in models.tsv
+    local filter=${1:-} seen=" "
+    while IFS=$'\t' read -r k model gpu gpus time extra; do
+        [[ "$k" != vllm || "$seen" == *" $model "* ]] && continue
+        [[ -n "$filter" && "$model" != *"$filter"* ]] && continue
+        seen+="$model "
+        echo "contamination $model: $(export MODEL="$model" EXTRA="$extra"
+            sb --job-name="abx-contam-$(basename "$model")" --gpus-per-node="$gpu:$gpus" \
+               --cpus-per-task=$(( gpus * 12 )) --mem=$(( gpus * 100 ))G --time=01:00:00 --export=ALL \
+               "$HERE/jobs/contamination.sbatch")"
+    done < "$HERE/models.tsv"
+}
+
 submit_evaluate() {
     local after=""
     if [ ${#LAST_IDS[@]} -gt 0 ]; then after="--dependency=afterany:$(IFS=:; echo "${LAST_IDS[*]}")"; fi
@@ -77,6 +91,7 @@ case "${1:-}" in
     prepare) submit_prepare ;;
     encoder|nuextract|vllm) submit_rows "$1" "${2:-}" ;;
     paraphrase) submit_paraphrase "${2:-options}" ;;
+    contamination) submit_contamination "${2:-}" ;;
     evaluate) submit_evaluate ;;
     all) submit_prepare; submit_rows encoder; submit_rows nuextract; submit_rows vllm; submit_evaluate ;;
     *) sed -n '2,14p' "$0"; exit 1 ;;

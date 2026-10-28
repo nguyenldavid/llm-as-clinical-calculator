@@ -17,7 +17,7 @@ The GPU systems (encoders, NuExtract, LLMs) are implemented and were dry-run end
 |---|---|
 | Phase 0: gold mappers and round-trip check | **Done.** 10,000 / 10,000 cases agree. |
 | Abacus-409 matched to per-field gold (A409) | **Done.** 397 / 397 non-empty rows. |
-| T1 (1,000 cases) and T4 (1,869 perturbed cases) | **Done.** Committed under `llm_calc/data/extraction/`. |
+| T1 (1,000 cases) and T4 (2,557 perturbed cases) | **Done.** Committed under `llm_calc/data/extraction/`. |
 | Training pool (disjoint from every test vignette) | **Done.** Generated on demand (`build-train`). |
 | Variant R (raw-facts) schema | **Done for HAS-BLED.** Other calculators already take raw values (§2.4). |
 | System A (rules), oracle, majority and template-inversion baselines | **Run on CPU** (§4). |
@@ -85,21 +85,28 @@ The decision schema (D) and the raw-facts schema (R) differ only where a thresho
 |---|---|---|
 | T1 | 1,000 (100 per calculator) | Original generator, fresh seeds |
 | A409 | 397 | Released failures, matched to seeds |
-| T4 | 1,869 | T1 cases × 6 perturbations: distractors 452, long note 485, abbreviations 332, reorder 250, units 200, conflicting values 150 |
+| T4 | 2,557 | T1 cases × 8 perturbations: distractors 452, long note 485, abbreviations 332, reorder 250, units 200, conflicting values 150, prompt injection 452, omission 236 |
 | T5 | 637 | MedCalc-Bench Verified (pinned revision `58fc3de`), test and train splits, 7 shared calculators |
 | TRAIN | about 19,000 (2,000 per calculator, minus duplicates of test vignettes) | Generator, separate seed range |
 
-Some perturbations apply only to some calculators. Units, for example, apply only where labs are given. Every T4 case keeps its T1 gold labels, and `meta.base_id` links it back for paired comparison.
+Some perturbations apply only to some calculators. Units, for example, apply only where labs are given. Every T4 case keeps its T1 gold labels, except omission cases: there, the deleted finding becomes "not documented" and the gold is re-derived. `meta.base_id` links each case back to T1 for paired comparison.
 
 ## 4. CPU baselines
 
-Score accuracy is computed by OpenMedCalc from the extracted request. A field is correct when it is exact, or within 1% for floats. Full tables are in `llm_calc/data/extraction/results_cpu_baselines/`.
+Score accuracy is computed by OpenMedCalc from the extracted request. A field is correct when it is exact, or within 1% for floats. Full tables are in `llm_calc/data/extraction/results_cpu_baselines/`. They were re-run after T4 gained the injection and omission perturbations. The majority baseline (and template inversion, which falls back to it when no template parses) was re-fit on the default training pool, so its floor moved by a few points. CIs are now cluster-bootstrap intervals (§9.1 of the plan).
+
+**New perturbations, first read.** The rules system was written before the injection and omission perturbations existed and was not changed for them. It scores 100% on both:
+
+- **Injection:** it ignores any sentence that is not a finding.
+- **Omission:** a deleted finding falls back to the calculator default, which is also the gold.
+
+Both are the behaviour the perturbations are designed to reward. Text-reading systems (LLMs, NuExtract, Jev) are the ones at risk.
 
 | System | T1 score acc | A409 score acc | T4 score acc | T4 macro field acc | **T5 score acc** | **T5 macro field acc** |
 |---|---|---|---|---|---|---|
 | Oracle (harness check) | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
-| Majority class per field (floor) | 0.067 | 0.033 | 0.051 | 0.467 | 0.053 | 0.450 |
-| Template inversion (memorisation ceiling) | **1.000** | **1.000** | **0.063** | 0.440 | 0.077 | 0.377 |
+| Majority class per field (floor) | 0.079 | 0.088 | 0.083 | 0.460 | 0.038 | 0.437 |
+| Template inversion (memorisation ceiling) | **1.000** | **1.000** | **0.075** | 0.436 | 0.133 | 0.378 |
 | Rules, System A (*in-sample on T1/T4*) | 1.000 | 0.967 | 1.000 | 1.000 | **0.155** | **0.737** |
 
 **Template inversion settles the T1 question.** It knows the templates and option phrasings and nothing clinical, yet it solves all of T1 and every one of the 397 vignettes that GPT-4o and Llama 3.1 got wrong. As soon as the wording changes (T4), it falls to the majority floor. So T1 and A409 measure whether a system can read these particular sentences, not whether it can extract clinical criteria. This confirms the plan's decision to make T2 and T3 the primary sets.
@@ -117,8 +124,8 @@ T5 uses MedCalc-Bench Verified notes: case-report excerpts and synthetic notes w
 - **The mapping is checked against MedCalc-Bench's own answers.** OpenMedCalc's score on the mapped request agrees with MedCalc-Bench's answer in **629 of 637** cases, after the SOFA fix. Of the remaining eight, six are MELD-Na rounding or dialysis-handling differences and two are the HAS-BLED age-65 rule.
 - **Undocumented criteria are recorded.** Criteria that MedCalc-Bench did not annotate (21% of field instances) are marked "not documented" in `field_sources`. The gold value for these is the calculator default.
 - **The rules system was not tuned on T5.** I had not read the T5 notes while writing it and will not tune it on them, so this is a genuine out-of-sample estimate:
-  - **Score accuracy:** 15.5% [12.9%, 18.6%], against 100% on T1/T4 and a 5.3% majority floor.
-  - **Macro field accuracy:** 0.737, against 0.450 for the majority floor.
+  - **Score accuracy:** 15.5% [12.7%, 18.4%] (cluster bootstrap by note), against 100% on T1/T4 and a 3.8% majority floor.
+  - **Macro field accuracy:** 0.737, against 0.437 for the majority floor.
   - **Undocumented fields:** 96% correct (mostly "absent").
   - **Documented fields:** 73% correct.
   - **Validity:** 2.7% of its requests are rejected by the schema's range checks.

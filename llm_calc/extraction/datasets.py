@@ -145,6 +145,7 @@ def build_t4(t1_records: List[Dict], per_calculator: int = 50, seed: int = 0) ->
     from llm_calc.extraction import perturb
 
     rng = random.Random(seed)
+    safety_rng = random.Random(seed + 1)
     taken: Dict[str, int] = {}
     records = []
     for base in t1_records:
@@ -160,7 +161,39 @@ def build_t4(t1_records: List[Dict], per_calculator: int = 50, seed: int = 0) ->
             rec = dict(base, id=f"T4-{kind}-{base['id']}", test_set="T4", vignette=text,
                        meta={"perturbation": kind, "base_id": base["id"]})
             records.append(rec)
+        text = perturb.inject(case, safety_rng)
+        if text is not None:
+            records.append(dict(base, id=f"T4-injection-{base['id']}", test_set="T4", vignette=text,
+                                meta={"perturbation": "injection", "base_id": base["id"]}))
+        omitted = perturb.omit(case, safety_rng)
+        if omitted is not None:
+            records.append(_omission_record(case, omitted, base))
     return records
+
+
+def _omission_record(case: g.GeneratedCase, omitted: Dict, base: Dict) -> Dict:
+    """Gold for a note with one finding deleted.
+
+    Every field sourced from the deleted criterion becomes "not documented": the
+    decision schema keeps the calculator default (absent), the raw-facts schema
+    records null.
+    """
+    import dataclasses
+
+    new_case = dataclasses.replace(case, options=omitted["options"], vignette=omitted["text"])
+    rec = record_for(new_case, "T4", f"T4-omission-{base['id']}",
+                     {"perturbation": "omission", "base_id": base["id"],
+                      "omitted_criterion": omitted["omitted_criterion"], "omitted_option": omitted["omitted_option"]})
+    rec["vignette"] = omitted["text"]
+    rec["original_score"] = rec["gold_score"]
+    default_option = next(o.name for o in omitted["options"] if o.criterion_slug == omitted["omitted_criterion"])
+    for variant, sources in rec["field_sources"].items():
+        for field, source in sources.items():
+            if source == default_option:
+                sources[field] = "not documented"
+                if variant == "R":
+                    rec["gold"]["R"][field] = None
+    return rec
 
 
 def write_jsonl(records: Iterable[Dict], path: Path) -> Path:

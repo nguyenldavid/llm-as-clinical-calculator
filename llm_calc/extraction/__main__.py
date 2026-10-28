@@ -11,6 +11,7 @@ Command line for the extraction benchmark.
     python -m llm_calc.extraction evaluate --pred-dir DIR --out DIR
     python -m llm_calc.extraction figures --eval-dir DIR --out DIR [--mock]
     python -m llm_calc.extraction annotate sample|agree|count ...
+    python -m llm_calc.extraction clinician sample|import|agree ...
 
 Run ``python -m llm_calc.extraction <command> --help`` for options.
 """
@@ -254,8 +255,8 @@ def cmd_evaluate(args):
     for row in summary:
         rows = [c for c in case_rows if c["system"] == row["system"] and c["variant"] == row["variant"]
                 and c["test_set"] == row["test_set"] and (row["calculator"] in ("ALL", c["calculator"]))]
-        lo, hi = stats.wilson(sum(c["score_correct"] for c in rows), len(rows))
-        row["score_acc_ci"] = f"[{lo:.3f}, {hi:.3f}]" if lo is not None else ""
+        ci = stats.cluster_bootstrap([float(c["score_correct"]) for c in rows], [c["cluster"] for c in rows])
+        row["score_acc_ci"] = f"[{ci['lo']:.3f}, {ci['hi']:.3f}]" if rows else ""
     by_pert = ev.summarise(field_rows, case_rows, by=("system", "variant", "test_set", "perturbation"))
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -277,6 +278,46 @@ def cmd_evaluate(args):
     print("\n".join(lines))
 
 
+MANIFEST_SETS = ("T1", "A409", "T2", "T3", "T4", "T5", "train")
+
+
+def cmd_manifest(args):
+    """SHA-256 of every benchmark set, so a rebuilt or downloaded copy can be checked byte for byte.
+
+    T5 is not distributed (CC-BY-SA source, rebuilt with build-t5), but its hash is
+    recorded so a rebuild can be verified.
+    """
+    import hashlib
+
+    data_dir = Path(args.data_dir)
+    path = data_dir / "MANIFEST.tsv"
+    rows = []
+    for name in MANIFEST_SETS:
+        f = data_dir / f"{name}.jsonl"
+        if not f.exists():
+            continue
+        data = f.read_bytes()
+        rows.append({"file": f.name, "records": data.count(b"\n"), "bytes": len(data),
+                     "sha256": hashlib.sha256(data).hexdigest()})
+    if args.check:
+        if not path.exists():
+            raise SystemExit(f"{path} does not exist; run `manifest` first")
+        with open(path, newline="") as fh:
+            expected = {r["file"]: r["sha256"] for r in csv.DictReader(fh, delimiter="\t")}
+        bad = [r["file"] for r in rows if r["file"] in expected and expected[r["file"]] != r["sha256"]]
+        missing = sorted(set(expected) - {r["file"] for r in rows})
+        for r in rows:
+            status = "MISMATCH" if r["file"] in bad else ("ok" if r["file"] in expected else "not in manifest")
+            print(f"{r['file']}: {status}")
+        for m in missing:
+            print(f"{m}: missing (rebuild it)")
+        if bad:
+            raise SystemExit(1)
+        return
+    _write_tsv(rows, path)
+    print(f"{len(rows)} files -> {path}")
+
+
 def cmd_mock_results(args):
     from llm_calc.extraction import mock
 
@@ -295,6 +336,10 @@ def main(argv=None):
         from llm_calc.extraction import annotation
 
         return annotation.main(argv[1:]) or 0
+    if argv and argv[0] == "clinician":  # clinician reference arm: sheets out, predictions in
+        from llm_calc.extraction import clinician
+
+        return clinician.main(argv[1:]) or 0
     p = argparse.ArgumentParser(prog="python -m llm_calc.extraction", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--data-dir", default=str(ds.DATA_DIR))
@@ -377,6 +422,10 @@ def main(argv=None):
     s.add_argument("--api-key-env", help="environment variable holding the key (api: OPENAI_API_KEY, jev: TYPESAFE_API_KEY)")
     s.add_argument("--concurrency", type=int, default=8)
     s.set_defaults(fn=cmd_predict)
+
+    s = sub.add_parser("manifest", help="write (or --check) SHA-256 hashes of the benchmark sets")
+    s.add_argument("--check", action="store_true")
+    s.set_defaults(fn=cmd_manifest)
 
     s = sub.add_parser("evaluate", help="grade every prediction file under --pred-dir")
     s.add_argument("--pred-dir", required=True)

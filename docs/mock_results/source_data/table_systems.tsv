@@ -1,0 +1,24 @@
+system	family	deployment	Killarney resources
+rules	Rules	on-prem CPU	CPU
+Bio_ClinicalBERT	Encoder	on-prem GPU	1 × L40S
+BiomedBERT	Encoder	on-prem GPU	1 × L40S
+gatortron-base	Encoder	on-prem GPU	1 × L40S
+ModernBERT-base	Encoder	on-prem GPU	1 × L40S
+NuExtract-2.0-2B	NuExtract	on-prem GPU	1 × L40S
+NuExtract-2.0-8B	NuExtract	on-prem GPU	1 × L40S
+NuExtract-2.0-8B (3-shot)	NuExtract	on-prem GPU	1 × L40S
+NuExtract3	NuExtract	on-prem GPU	1 × L40S
+NuExtract3 (3-shot)	NuExtract	on-prem GPU	1 × L40S
+NuExtract3 (constrained)	NuExtract	on-prem GPU	1 × L40S
+Llama-3.1-8B	Open LLM	on-prem GPU	1 × L40S
+Qwen2.5-7B	Open LLM	on-prem GPU	1 × L40S
+Qwen3-8B	Open LLM	on-prem GPU	1 × L40S
+Qwen3-32B	Open LLM	on-prem GPU	2 × L40S
+Llama-3.1-70B	Open LLM	on-prem GPU	4 × L40S
+Llama-3.1-70B (3-shot)	Open LLM	on-prem GPU	4 × L40S
+Qwen2.5-72B	Open LLM	on-prem GPU	4 × L40S
+gpt-4o	API LLM	external API	external API
+Jev 1.14	System One	external API	
+Jev 1.13	System One	external API	
+clinician:A	Clinician	human	
+clinician:B	Clinician	human	

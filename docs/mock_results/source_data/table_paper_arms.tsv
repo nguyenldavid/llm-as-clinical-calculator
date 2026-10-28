@@ -1,0 +1,7 @@
+arm	GPT-4o	Llama 3.1 70B
+base	0.715	0.527
+rag	0.77	0.622
+ci	0.806	0.651
+rag_ci	0.815	0.657
+omc (agent)	0.928	0.84
+extract→compute	0.958	0.935

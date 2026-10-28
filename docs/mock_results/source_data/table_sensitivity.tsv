@@ -1,0 +1,7 @@
+family	system	S0 primary (score, T2∪T3)	S1 invalid outputs excluded	S2 without HAS-BLED and CCI	S3 macro field, exact floats	S4 T5, all rows	S5 T5, OMC agrees with MedCalc-Bench	family rank stable
+Rules	rules	0.19	0.21902	0.176563	0.656436	0.131059	0.129326	yes
+Encoder	ModernBERT-base	0.22875	0.254167	0.228125	0.729192	0.163375	0.162113	yes
+NuExtract	NuExtract3 (3-shot)	0.4925	0.512354	0.501563	0.898195	0.373429	0.369763	yes
+Open LLM	Qwen2.5-72B	0.57625	0.596378	0.56875	0.911234	0.414722	0.409836	no
+API LLM	gpt-4o	0.5625	0.577664	0.554688	0.920106	0.456014	0.453552	no
+System One	Jev 1.14	0.4875	0.506494	0.479687	0.891384	0.344704	0.342441	yes

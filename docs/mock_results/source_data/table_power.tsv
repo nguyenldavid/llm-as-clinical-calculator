@@ -1,0 +1,5 @@
+comparison set	cases	±95% CI at 90% accuracy	MDE, 5% discordant	MDE, 10% discordant	MDE, 20% discordant	MDE, 10% discordant, Holm worst case (α=0.05/15)
+T2 ∪ T3 (primary)	2000	0.0131478	0.0139997	0.0197985	0.0279993	0.0266849
+one test set	1000	0.0185939	0.0197869	0.0279828	0.0395737	0.0377082
+T5 (MedCalc-Bench, 7 calculators)	637	0.023297	0.0247751	0.0350373	0.0495502	0.0472032
+one calculator in T2 ∪ T3	200	0.0415771	0.0440363	0.0622768	0.0880727	0.0837798

@@ -1,0 +1,16 @@
+comparison	systems	n	only first right	only second right	Δ score accuracy (95% CI)	Δ macro field (95% CI)	p (exact McNemar)	p (Holm)
+Rules vs Encoder	rules vs ModernBERT-base	800	100	131	-0.039 (-0.075 to -0.003)	-0.073 (-0.097 to -0.048)	0.048	0.144
+Rules vs NuExtract	rules vs NuExtract3 (3-shot)	800	68	310	-0.302 (-0.347 to -0.260)	-0.242 (-0.264 to -0.219)	<0.001	<0.001
+Rules vs Open LLM	rules vs Qwen2.5-72B	800	53	362	-0.386 (-0.427 to -0.346)	-0.255 (-0.277 to -0.232)	<0.001	<0.001
+Rules vs API LLM	rules vs gpt-4o	800	51	349	-0.372 (-0.414 to -0.334)	-0.264 (-0.285 to -0.243)	<0.001	<0.001
+Rules vs System One	rules vs Jev 1.14	800	63	301	-0.297 (-0.340 to -0.255)	-0.235 (-0.257 to -0.213)	<0.001	<0.001
+Encoder vs NuExtract	ModernBERT-base vs NuExtract3 (3-shot)	800	71	282	-0.264 (-0.307 to -0.221)	-0.169 (-0.192 to -0.146)	<0.001	<0.001
+Encoder vs Open LLM	ModernBERT-base vs Qwen2.5-72B	800	58	336	-0.347 (-0.389 to -0.305)	-0.182 (-0.204 to -0.159)	<0.001	<0.001
+Encoder vs API LLM	ModernBERT-base vs gpt-4o	800	63	330	-0.334 (-0.375 to -0.291)	-0.191 (-0.212 to -0.170)	<0.001	<0.001
+Encoder vs System One	ModernBERT-base vs Jev 1.14	800	69	276	-0.259 (-0.300 to -0.217)	-0.162 (-0.185 to -0.140)	<0.001	<0.001
+NuExtract vs Open LLM	NuExtract3 (3-shot) vs Qwen2.5-72B	800	142	209	-0.084 (-0.128 to -0.037)	-0.013 (-0.031 to 0.006)	<0.001	0.002
+NuExtract vs API LLM	NuExtract3 (3-shot) vs gpt-4o	800	153	209	-0.070 (-0.115 to -0.021)	-0.022 (-0.039 to -0.006)	0.004	0.015
+NuExtract vs System One	NuExtract3 (3-shot) vs Jev 1.14	800	166	162	0.005 (-0.039 to 0.050)	0.007 (-0.012 to 0.025)	0.868	1.000
+Open LLM vs API LLM	Qwen2.5-72B vs gpt-4o	800	162	151	0.014 (-0.029 to 0.056)	-0.009 (-0.026 to 0.007)	0.572	1.000
+Open LLM vs System One	Qwen2.5-72B vs Jev 1.14	800	207	136	0.089 (0.045 to 0.133)	0.020 (0.002 to 0.036)	<0.001	0.001
+API LLM vs System One	gpt-4o vs Jev 1.14	800	202	142	0.075 (0.030 to 0.120)	0.029 (0.011 to 0.046)	0.001	0.007

@@ -63,6 +63,9 @@ SYSTEMS: List[MockSystem] = [
     MockSystem("api:gpt-4o", "API LLM", 4.0, 0.4, 0.0, 2.5, "external API"),
     MockSystem("jev:jev-1.14.0", "System One", 3.6, 0.3, 0.0, 0.3, "external API"),
     MockSystem("jev:jev-1.13.0", "System One", 3.4, 0.3, 0.0, 0.3, "external API"),
+    # reference arm: two clinicians on a stratified sample (clinician.py), self-timed
+    MockSystem("clinician:A", "Clinician", 4.4, 0.0, 0.0, 95.0, "human"),
+    MockSystem("clinician:B", "Clinician", 4.2, 0.0, 0.0, 110.0, "human"),
 ]
 FAMILIES = ["Rules", "Encoder", "NuExtract", "Open LLM", "API LLM", "System One"]
 CONFIDENCE_FAMILIES = {"System One"}  # systems that report a confidence per answer
@@ -124,7 +127,7 @@ def mock_predictions(records: List[Dict], system: MockSystem, variant: str, seed
                           "raw": "", "error": "mock: unparseable", "latency_s": system.latency_s})
             continue
         gold = r["gold"][variant]
-        out, confidence = {}, {}
+        out, confidence, probability = {}, {}, {}
         for spec in schemas.field_specs(r["calculator"], variant):
             logit = system.skill - SET_DIFFICULTY.get(r["test_set"], 1.0)
             if r["test_set"] in GENERATOR_PHRASED:
@@ -140,10 +143,13 @@ def mock_predictions(records: List[Dict], system: MockSystem, variant: str, seed
             if system.family in CONFIDENCE_FAMILIES:
                 # informative but imperfect confidence: higher when right
                 confidence[spec.name] = rng.betavariate(7, 1.5) if correct else rng.betavariate(2.5, 2.5)
+                # probability of the answer given: somewhat overconfident, as LLM probabilities tend to be
+                probability[spec.name] = min(1.0, 0.55 + 0.45 * confidence[spec.name] + rng.uniform(0, 0.05))
         pred = {"id": r["id"], "system": system.name, "variant": variant, "output": out, "raw": "",
                 "error": None, "latency_s": system.latency_s * rng.uniform(0.8, 1.2)}
         if confidence:
             pred["confidence"] = confidence
+            pred["probability"] = probability
         preds.append(pred)
     return preds
 
@@ -163,22 +169,31 @@ def mock_sets(data_dir: Path = ds.DATA_DIR, per_calculator: int = 40) -> List[Di
     base_ids = {r["id"] for r in _cap(t1, per_calculator // 2)}
     t4 = [r for r in ds.load_set("T4", data_dir) if r["meta"]["base_id"] in base_ids]
     records = t1 + _cap(ds.load_set("A409", data_dir), per_calculator) + t4
-    for name in ("T2", "T3"):  # stand-ins until the reviewed sets exist
-        records += [dict(r, id=r["id"].replace("T1-", f"{name}mock-"), test_set=name) for r in t1]
+    # stand-ins until the reviewed sets exist; T3 paraphrases a T1 case (same cluster), T2 is new cases
+    records += [dict(r, id=r["id"].replace("T1-", "T2mock-"), test_set="T2") for r in t1]
+    records += [dict(r, id=r["id"].replace("T1-", "T3mock-"), test_set="T3", meta={"base_id": r["id"]}) for r in t1]
     if (data_dir / "T5.jsonl").exists():
         records += _cap(ds.load_set("T5", data_dir), per_calculator * 2)
     return records
 
 
-FIELD_KEYS = ("id", "test_set", "calculator", "system", "variant", "field", "kind", "correct", "source", "confidence")
+FIELD_KEYS = ("id", "test_set", "calculator", "cluster", "system", "variant", "field", "kind", "correct",
+              "correct_exact", "source", "confidence", "probability")
 
 
 def build(out: Path, data_dir: Path = ds.DATA_DIR, seed: int = 0) -> Dict:
     records = mock_sets(data_dir)
     field_rows, case_rows = [], []
+    from llm_calc.extraction.clinician import sample_cases
+
+    clinician_ids = {r["id"] for r in sample_cases([r for r in records if r["test_set"] in ("T2", "T3", "T5")], 10)}
     for system in SYSTEMS:
         for variant in ("D", "R"):
             recs = [r for r in records if variant in r["gold"]]
+            if system.family == "Clinician":
+                if variant == "R":
+                    continue
+                recs = [r for r in recs if r["id"] in clinician_ids]
             preds = mock_predictions(recs, system, variant, seed)
             f, c = ev.grade(recs, preds)
             field_rows += [{k: row[k] for k in FIELD_KEYS} for row in f]
@@ -195,8 +210,8 @@ def build(out: Path, data_dir: Path = ds.DATA_DIR, seed: int = 0) -> Dict:
     # error taxonomy: one code per wrong field, as an annotator would assign
     errors = Counter()
     for f in field_rows:
-        if not f["correct"] and f["variant"] == "D":
-            fam = family_of(f["system"])
+        fam = family_of(f["system"])
+        if not f["correct"] and f["variant"] == "D" and fam in ERROR_WEIGHTS:
             errors[(fam, rng.choices(ERROR_CODES, ERROR_WEIGHTS[fam])[0])] += 1
     with open(out / "error_codes.tsv", "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t")

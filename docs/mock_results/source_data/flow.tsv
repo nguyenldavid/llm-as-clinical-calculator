@@ -1,0 +1,20 @@
+stage	n
+T1	1000
+T4	2557
+T4 base cases	500
+T4 abbreviations	332
+T4 conflicting	150
+T4 distractors	452
+T4 injection	452
+T4 long_note	485
+T4 omission	236
+T4 reorder	250
+T4 units	200
+Abacus-409 rows	409
+Abacus-409 empty vignette	12
+Abacus-409 unmatched	0
+A409	397
+MedCalc-Bench rows	654
+MedCalc-Bench invalid request	17
+T5	637
+T5 OMC agrees	629
