@@ -195,7 +195,14 @@ Only ARISCAT (58% observed vs 0% mirrored) and MELD-Na (50% vs 25%) separate cle
    This runs Phase 0 again, the CPU baselines, 4 encoders, 6 NuExtract configurations and 7 LLM configurations (including the paper's Llama 3.1 70B), then evaluates.
 2. **T2/T3.** Run `submit.sh paraphrase options` and `submit.sh paraphrase vignettes` (Mistral-Small-24B, a family not under test), have a clinician review the sheets, then run `build-t2` and `build-t3`.
 3. **API arms.** Run GPT-4o through `predict --system api` on the synthetic sets only. Re-run the paper's original end-to-end arms on T1–T4 with the existing `llmcalc experiment` code for the RQ2 comparison.
-4. **Clinician decisions:**
+4. **Error annotation** (plan §10), after the Killarney run:
+   - `annotate sample` on the evaluation directory gives two blinded sheets of 300 errors.
+   - Two annotators code them.
+   - `annotate agree` reports κ and lists the disagreements for adjudication.
+   - `annotate count` produces the real Figure 10 and Table 8.
+5. **Clinician decisions:**
    - the CCI liver-disease adjudication (§2.3.2);
    - risk-band cut-offs (`evaluate.RISK_BANDS` are provisional);
-   - the T5/T6 scope (plan §13).
+   - the T5/T6 scope (plan §13);
+   - the HAS-BLED "elderly" rule (≥ 65 in OpenMedCalc, > 65 in the published score; §2.3.7);
+   - sign-off on the mock figures and tables (`docs/mock_results/`) as the outputs to produce.

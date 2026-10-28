@@ -363,7 +363,13 @@ Per 1,000 cases, report:
    | `MULTI` | Multi-select error (missed or extra item) |
    | `SCHEMA` | Validation failure |
 
-3. **Annotation process.** Two annotators label a stratified sample of 300 field-level errors. Report Cohen's κ and resolve disagreements by adjudication. Reuse the annotation tooling in `analysis/manage_annotation.py`.
+3. **Annotation process.** Two annotators label a stratified sample of 300 field-level errors. Report Cohen's κ and resolve disagreements by adjudication.
+
+   *As implemented* (`python -m llm_calc.extraction annotate`):
+   - **`sample`** draws errors balanced over system family × calculator and writes one blinded TSV sheet per annotator. System names are hidden behind a uid, with the key kept in a separate file.
+   - **`agree`** reports raw agreement and Cohen's κ, overall and per code, and writes `adjudicate.tsv` listing every disagreement.
+   - **`count`** turns the agreed and adjudicated sheets into `error_codes.tsv`, which feeds Figure 10 and Table 8.
+   - **A `GOLD` code** lets annotators flag a suspected gold-label error instead of a model error.
 4. **Clinical impact.** For each error, record whether it changes the risk category (§8.2). Report the share of errors that change management-relevant categories.
 
 ---

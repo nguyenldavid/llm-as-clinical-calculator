@@ -102,3 +102,11 @@ def test_t5_mapping_agrees_with_medcalc_bench():
     t5 = list(ds.read_jsonl(path))
     agree = sum(r["meta"]["score_agrees"] for r in t5) / len(t5)
     assert agree > 0.98
+
+
+def test_cohen_kappa():
+    from llm_calc.extraction.annotation import cohen_kappa
+
+    assert cohen_kappa(list("aabb"), list("aabb")) == 1.0
+    assert abs(cohen_kappa(list("aabb"), list("abab"))) < 1e-9  # agreement at chance
+    assert cohen_kappa(list("aaab"), list("aaba")) < 0.5

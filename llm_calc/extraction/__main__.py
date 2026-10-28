@@ -9,6 +9,8 @@ Command line for the extraction benchmark.
     python -m llm_calc.extraction train-encoder --base-model emilyalsentzer/Bio_ClinicalBERT --out DIR
     python -m llm_calc.extraction predict --system vllm --model PATH --sets T1,T4 --out DIR
     python -m llm_calc.extraction evaluate --pred-dir DIR --out DIR
+    python -m llm_calc.extraction figures --eval-dir DIR --out DIR [--mock]
+    python -m llm_calc.extraction annotate sample|agree|count ...
 
 Run ``python -m llm_calc.extraction <command> --help`` for options.
 """
@@ -281,6 +283,11 @@ def cmd_figures(args):
 
 
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "annotate":  # field-error annotation has its own sub-steps
+        from llm_calc.extraction import annotation
+
+        return annotation.main(argv[1:]) or 0
     p = argparse.ArgumentParser(prog="python -m llm_calc.extraction", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--data-dir", default=str(ds.DATA_DIR))
